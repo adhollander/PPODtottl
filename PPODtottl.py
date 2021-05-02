@@ -25,6 +25,14 @@ from oauth2client.service_account import ServiceAccountCredentials
 # * For the vocabs, they will all share the base URI for the ttl file itself, but might want to use our 24-bit hash thing for each term. Something like CaPPOD:vocab_A24D83. But the hash should concatenate the vocab name and the term name
 # * For all the columns in each sheet / dataframe, look up if we have any equivalent in PPOD / the OKN work, and use that terminology for those properties.
 
+
+# Some namespaces
+auxprefix = 'http://asi.ice.ucdavis.edu/sustsource/schemas/CA_PPODterms.ttl#' # needs to change!
+rdfsuri = "http://www.w3.org/2000/01/rdf-schema#"
+rdfuri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+
+
+
 # The URIs for the major types in the workbook. 
 # Not sure about the guidelines/mandates one but this will do until 
 # I work up a more elaborate ontology for it.
@@ -107,8 +115,6 @@ projpred = {"Project": ('d', 'http://xmlns.com/foaf/0.1/Project', 'project', '',
             "Use Case (EPA)": ('d', 'http://asi.ice.ucdavis.edu/sustsource/schemas/fsisupp.owl#usecaseEPA', 'use case: EPA', '', 's'),
             "Use Case (JPA)": ('d', 'http://asi.ice.ucdavis.edu/sustsource/schemas/fsisupp.owl#usecaseJPA', 'use case: JPA','', 's')    
 }
-
-
 
 # program predicates dictionary
 progpred = {
@@ -421,7 +427,6 @@ for i in range(counties_wd.shape[0]):
 ecoregions = vocabdf['Ecoregion_USDA']
 
 ecoregiondict = {}
-auxprefix = 'http://asi.ice.ucdavis.edu/sustsource/schemas/CA_PPODterms.ttl#' # needs to change!
 for i in range(1, ecoregions.shape[0]):
     s = ecoregions[i]
     if len(s) > 0:
@@ -435,114 +440,20 @@ habtypedict = {}
 for i in range(cwhrdf.shape[0]):
     habtypedict.update( {cwhrdf.iloc[i,0] : 'http://asi.ice.ucdavis.edu/sustsource/schemas/CA_PPODterms.ttl#whr_' + cwhrdf.iloc[i,0] })
 
-
-# orgtype
-orgtypes = vocabdf['OrgType']
-orgtypedict = {}
-auxprefix = 'http://asi.ice.ucdavis.edu/sustsource/schemas/CA_PPODterms.ttl#'
-for i in range(orgtypes.shape[0]):
-    s = orgtypes[i]
-    if len(s) > 0:
-        orgtypedict.update( {s : auxprefix + "oty_" + makeid(s)})
-
-
-
-# orgactivity
-orgactivity = vocabdf['OrgActivity']
-orgactivitydict = {}
-for i in range(orgactivity.shape[0]):
-    s = orgactivity[i]
-    if len(s) > 0:
-        orgactivitydict.update( {s : auxprefix + "oac_" + makeid(s)})
-
-
-
-# ProjType
-projtype = vocabdf['ProjType']
-projtypedict = {}
-for i in range(projtype.shape[0]):
-    s = projtype[i]
-    if len(s) > 0:
-        projtypedict.update( {s : auxprefix + "pjt_" + makeid(s)})
-
-
-
-# ProgType
-progtype = vocabdf['ProgType']
-progtypedict = {}
-for i in range(progtype.shape[0]):
-    s = progtype[i]
-    if len(s) > 0:
-        progtypedict.update( {s : auxprefix + "pgt_" + makeid(s)})
-
-
-# GMType
-gmtype = vocabdf['GMType']
-gmtypedict = {}
-for i in range(gmtype.shape[0]):
-    s = gmtype[i]
-    if len(s) > 0:
-        gmtypedict.update( {s : auxprefix + "gmn_" + makeid(s)})
-
-
-
-# GovLevel
-govlevel = vocabdf['GovLevel']
-govleveldict = {}
-for i in range(govlevel.shape[0]):
-    s = govlevel[i]
-    if len(s) > 0:
-        govleveldict.update( {s : auxprefix + "gvl_" + makeid(s)})
-
-
-
-# PositionType
-positiontype = vocabdf['PositionType']
-positiontypedict = {}
-for i in range(positiontype.shape[0]):
-    s = positiontype[i]
-    if len(s) > 0:
-        positiontypedict.update( {s : auxprefix + "pst_" + makeid(s)})
-
-
-
-
-
-
-
-
-# ProjRole
-projrole = vocabdf['PeopleProjRole']
-projroledict = {}
-for i in range(projrole.shape[0]):
-    s = projrole[i]
-    if len(s) > 0:
-        projroledict.update( {s : auxprefix + "prl_" + makeid(s)})
-
-
-
-
-
+orgtypedict = makevocabdict(vocabdf, 'OrgType', auxprefix, 'oty')
+orgactivitydict = makevocabdict(vocabdf, 'OrgActivity', auxprefix, 'oac')
+projtypedict = makevocabdict(vocabdf, 'ProjType', auxprefix, 'pjt')
+progtypedict = makevocabdict(vocabdf, 'ProgType', auxprefix, 'pgt')
+gmtypedict = makevocabdict(vocabdf, 'GMType', auxprefix, 'gmn')
+govleveldict = makevocabdict(vocabdf, 'GovLevel', auxprefix, 'gvl')
+positiontypedict = makevocabdict(vocabdf, 'PositionType', auxprefix, 'pst')
+projroledict = makevocabdict(vocabdf, 'PeopleProjRole', auxprefix, 'prl')
+orggmrelationdict = makevocabdict(vocabdf, 'orgGMRelation', auxprefix, 'pst') # is prefix correct?
 # orgGMRelation - might handle this in different manner - these are properties. But I'll create the dict for now.
-orggmrelation = vocabdf['orgGMRelation']
-orggmrelationdict = {}
-for i in range(orggmrelation.shape[0]):
-    s = orggmrelation[i]
-    if len(s) > 0:
-        orggmrelationdict.update( {s : auxprefix + "pst_" + makeid(s)})
-
-
-
 # #### Actually, the above is redundant
-
-
+orgprojrelationdict = makevocabdict(vocabdf, 'orgProjRelation', auxprefix, 'prl') 
 # orgProjRelation - this may be redundant as well, but for completeness....
-orgprojrelation = vocabdf['orgProjRelation']
-orgprojrelationdict = {}
-for i in range(orgprojrelation.shape[0]):
-    s = orgprojrelation[i]
-    if len(s) > 0:
-        orgprojrelationdict.update( {s : auxprefix + "prl_" + makeid(s)})
+
 
 
 
@@ -570,9 +481,6 @@ g = rdflib.Graph()
 
 # the first step is to get vocabularies loaded, in particular creating rdfs:labels for the entries
 
-
-rdfsuri = "http://www.w3.org/2000/01/rdf-schema#"
-rdfuri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
 
 
