@@ -8,9 +8,6 @@
 # 
 # 
 
-# In[171]:
-
-
 import gspread
 import pandas as pd
 import binascii
@@ -18,25 +15,12 @@ import rdflib
 from pprint import pprint
 from oauth2client.service_account import ServiceAccountCredentials
 
-
-# In[172]:
-
-
 # get authorization to access Google Sheets
-
 # use creds to create a client to interact with the Google Drive API
 scope = ['https://spreadsheets.google.com/feeds']
 creds = ServiceAccountCredentials.from_json_keyfile_name('fsl-data-access-8731857cb6f9.json', scope)
 gssclient = gspread.authorize(creds)
-
-
-# In[173]:
-
-
 gsworkbook = gssclient.open_by_url('https://docs.google.com/spreadsheets/d/1k_BeTRklXz1aAh25DyYs1TIY7Okfa3jh6YJC6PQTUiE')
-
-
-# In[174]:
 
 
 # get pointers to all the relevant sheets
@@ -56,10 +40,6 @@ tools_sheet = gsworkbook.worksheet('Tools')
 futureresources_sheet = gsworkbook.worksheet('Future Resources')
 intissues_sheet = gsworkbook.worksheet('Issues (Integrated)')
 compissues_sheet = gsworkbook.worksheet('Issues (Component)')
-
-
-# In[175]:
-
 
 # convert these to data frames
 vocabdf = pd.DataFrame(vocab_sheet.get_all_records())
@@ -87,7 +67,6 @@ compissuedf = pd.DataFrame(compissues_sheet.get_all_records())
 # * For the vocabs, they will all share the base URI for the ttl file itself, but might want to use our 24-bit hash thing for each term. Something like CaPPOD:vocab_A24D83. But the hash should concatenate the vocab name and the term name
 # * For all the columns in each sheet / dataframe, look up if we have any equivalent in PPOD / the OKN work, and use that terminology for those properties.
 
-# In[176]:
 
 
 # Let's create a minihash function for unique identifiers. I figure 24 bits is big enough (6 hex digits).
@@ -97,21 +76,7 @@ def makeid(s):
     return hexid
 
 
-# In[177]:
-
-
-makeid("the quick dog jumped high")
-
-
 # I figure I will use this as identifier suffixes for all these text names that are too long to abbreviate. E.g. 'Yuba County Resource Conservation District' becomes `CaPPOD:org_fb822f` using the `makeid` function.
-
-# In[178]:
-
-
-makeid('Yuba County Resource Conservation District')
-
-
-# In[179]:
 
 
 # The URIs for the major types in the workbook. 
@@ -128,14 +93,6 @@ PPODrefs = {'Organizations': 'http://xmlns.com/foaf/0.1/Organization',
             'Issues (Component)': 'http://asi.ice.ucdavis.edu/sustsource/schemas/sustsource.owl#ComponentIssue'
            }
 
-
-# In[180]:
-
-
-PPODrefs
-
-
-# In[181]:
 
 
 # We now want dictionaries for all our lists of properties associated with each major type.
@@ -166,10 +123,7 @@ orgpred = {"Organization": ('d', 'http://purl.org/dc/terms/title', 'title', '', 
            "GM_Name": ('o', 'http://asi.ice.ucdavis.edu/sustsource/schemas/fsisupp.owl#GM_Name', 'guideline/mandate name', 'gmt', 'm')
           }
            
-           
-
-
-# In[182]:
+        
 
 
 # Project predicates dictionary
@@ -209,8 +163,6 @@ projpred = {"Project": ('d', 'http://xmlns.com/foaf/0.1/Project', 'project', '',
 }
 
 
-# In[183]:
-
 
 # program predicates dictionary
 progpred = {
@@ -235,9 +187,6 @@ progpred = {
 }
 
 
-# In[184]:
-
-
 personpred = {
             "Full Name": ('d', 'http://xmlns.com/foaf/0.1/name', 'full name', '', 's'),
             "Last Name": ('d', 'http://xmlns.com/foaf/0.1/lastName', 'last name', '', 's'),
@@ -256,8 +205,6 @@ personpred = {
 }
 
 
-# In[185]:
-
 
 personorgpred = {
             "Full Name": ('o', 'http://purl.obolibrary.org/obo/RO_0000057', 'has participant', 'per', 's'),
@@ -269,8 +216,6 @@ personorgpred = {
 }
 
 
-# In[186]:
-
 
 personprojpred = {
             "Full Name": ('o', 'http://purl.obolibrary.org/obo/RO_0000057', 'has participant', 'per', 's'),
@@ -279,9 +224,6 @@ personprojpred = {
             "ProjRole": ('d', 'http://purl.obolibrary.org/obo/RO_0000087', 'has role', '', 's'),
 
 }
-
-
-# In[187]:
 
 
 personprogrampred = {
@@ -293,9 +235,6 @@ personprogrampred = {
             "Year (Start)": ('d', 'http://dbpedia.org/ontology/startYear', 'start year', '', 's'),
             "Year (End)": ('d', 'http://dbpedia.org/ontology/endYear', 'end year', '', 's')
 }
-
-
-# In[188]:
 
 
 guidelinespred = {
@@ -316,10 +255,6 @@ guidelinespred = {
     
 }
 
-
-# In[189]:
-
-
 # this has different logic! Patrick is basically encoding triples here, and the dictionary below
 # is the lookup for the second column
 orggmpred = {
@@ -330,10 +265,6 @@ orggmpred = {
             "Funds Established By": ('o', 'http://vivoweb.org/ontology/core#hasFundingVehicle', 'has funding vehicle'),  
 }
 
-
-# In[190]:
-
-
 # somewhat different logic for this table as well. columns C, D, E in this table form a class that
 # whose instances the GMs in column A point to with predicate in column B. The entries in this 
 # dictionary are for columns C, D, and E
@@ -342,10 +273,6 @@ orgprojgmpred = {
             "OrgProjRelation": ('o', 'http://purl.obolibrary.org/obo/RO_0000087', 'has role', 'orgprojrelationdict', 's'),
             "Project": ('o', 'http://purl.obolibrary.org/obo/RO_0002331', 'involved in', 'prj', 's'),
 }
-
-
-# In[191]:
-
 
 datasetpred = {
             "Name":  ('d', 'http://purl.org/dc/terms/title', 'title', '', 's'),
@@ -360,9 +287,6 @@ datasetpred = {
 }
 
 
-# In[192]:
-
-
 toolpred = {
             "Tool": ('d', 'http://purl.org/dc/terms/title', 'title', '', 's'),
             "Alias": ('d', 'http://www.w3.org/2004/02/skos/core#altLabel', 'alias', '', 's'),
@@ -374,8 +298,6 @@ toolpred = {
             "URL": ('u', 'http://dev.poderopedia.com/vocab/hasURL', 'has URL', '', 's')
 }
 
-
-# In[193]:
 
 
 # Create dictionary of predicate URIs as keys and their labels as values
@@ -391,8 +313,6 @@ for predsbyclass in predsbyclasslist:
             predlabeldict[pred0URI] = pred0label
 
 
-# In[194]:
-
 
 predlabeldict
 
@@ -406,40 +326,19 @@ predlabeldict
 
 # For the issues, we want to use our established terms. The intissues and compissues sheets gives the suffixes for these. 
 
-# In[195]:
 
 
 intissuedict = {}
 intissueprefix = "http://asi.ice.ucdavis.edu/sustsource/schemas/sustsource.owl#"
 
 
-# In[196]:
 
-
-intissuedf.shape[0]
-
-
-# In[197]:
 
 
 for i in range(intissuedf.shape[0]):
     #print(intissuedf.iloc[i,0], intissuedf.iloc[i,1])
     intissuedict.update( {intissuedf.iloc[i,1] : intissueprefix + intissuedf.iloc[i,0] })
 
-
-# In[198]:
-
-
-intissueprefix + "IS0050"
-
-
-# In[199]:
-
-
-intissuedict
-
-
-# In[200]:
 
 
 # Now for the component issues
@@ -449,14 +348,6 @@ for i in range(compissuedf.shape[0]):
     compissuedict.update( {compissuedf.iloc[i,1] : compissueprefix + compissuedf.iloc[i,0] })
 
 
-# In[201]:
-
-
-compissuedict
-
-
-# In[202]:
-
 
 # we want to merge these two dictionaries
 issuedict = {**compissuedict , **intissuedict} 
@@ -464,14 +355,9 @@ issuedict = {**compissuedict , **intissuedict}
 
 # #### Counties
 # After some search, have opted to use Wikidata URIs for the California counties. I grabbed these from Wikidata using their SPARQL query interface.
-
-# In[203]:
-
-
 counties_wd = pd.read_csv('CACounties_WD.csv')
 
 
-# In[204]:
 
 
 countydict = {}
@@ -479,22 +365,16 @@ for i in range(counties_wd.shape[0]):
     countydict.update( {counties_wd.iloc[i,1] : counties_wd.iloc[i,0] })
 
 
-# In[205]:
-
-
-countydict
 
 
 # For the rest of these vocabulary columns I'm going to use my minihash function.
 
-# In[206]:
 
 
 # Ecoregions
 ecoregions = vocabdf['Ecoregion_USDA']
 
 
-# In[207]:
 
 
 ecoregiondict = {}
@@ -507,13 +387,6 @@ for i in range(1, ecoregions.shape[0]):
     
 
 
-# In[208]:
-
-
-ecoregiondict
-
-
-# In[209]:
 
 
 # habitat type, use CWHR here
@@ -521,15 +394,6 @@ cwhrdf = pd.read_csv('CWHR_Habitat_Lookup_Table.csv')
 habtypedict = {}
 for i in range(cwhrdf.shape[0]):
     habtypedict.update( {cwhrdf.iloc[i,0] : 'http://asi.ice.ucdavis.edu/sustsource/schemas/CA_PPODterms.ttl#whr_' + cwhrdf.iloc[i,0] })
-
-
-# In[210]:
-
-
-habtypedict
-
-
-# In[211]:
 
 
 # orgtype
@@ -542,8 +406,6 @@ for i in range(orgtypes.shape[0]):
         orgtypedict.update( {s : auxprefix + "oty_" + makeid(s)})
 
 
-# In[212]:
-
 
 # orgactivity
 orgactivity = vocabdf['OrgActivity']
@@ -554,13 +416,7 @@ for i in range(orgactivity.shape[0]):
         orgactivitydict.update( {s : auxprefix + "oac_" + makeid(s)})
 
 
-# In[213]:
 
-
-orgactivitydict
-
-
-# In[214]:
 
 
 # ProjType
@@ -572,13 +428,10 @@ for i in range(projtype.shape[0]):
         projtypedict.update( {s : auxprefix + "pjt_" + makeid(s)})
 
 
-# In[215]:
 
 
-projtypedict
 
 
-# In[216]:
 
 
 # ProgType
@@ -590,15 +443,6 @@ for i in range(progtype.shape[0]):
         progtypedict.update( {s : auxprefix + "pgt_" + makeid(s)})
 
 
-# In[217]:
-
-
-progtypedict
-
-
-# In[218]:
-
-
 # GMType
 gmtype = vocabdf['GMType']
 gmtypedict = {}
@@ -607,14 +451,6 @@ for i in range(gmtype.shape[0]):
     if len(s) > 0:
         gmtypedict.update( {s : auxprefix + "gmn_" + makeid(s)})
 
-
-# In[219]:
-
-
-gmtypedict
-
-
-# In[220]:
 
 
 # GovLevel
@@ -626,14 +462,6 @@ for i in range(govlevel.shape[0]):
         govleveldict.update( {s : auxprefix + "gvl_" + makeid(s)})
 
 
-# In[221]:
-
-
-govleveldict
-
-
-# In[222]:
-
 
 # PositionType
 positiontype = vocabdf['PositionType']
@@ -644,13 +472,10 @@ for i in range(positiontype.shape[0]):
         positiontypedict.update( {s : auxprefix + "pst_" + makeid(s)})
 
 
-# In[223]:
 
 
-positiontypedict
 
 
-# In[224]:
 
 
 # ProjRole
@@ -662,13 +487,7 @@ for i in range(projrole.shape[0]):
         projroledict.update( {s : auxprefix + "prl_" + makeid(s)})
 
 
-# In[225]:
 
-
-projroledict
-
-
-# In[226]:
 
 
 # orgGMRelation - might handle this in different manner - these are properties. But I'll create the dict for now.
@@ -680,15 +499,8 @@ for i in range(orggmrelation.shape[0]):
         orggmrelationdict.update( {s : auxprefix + "pst_" + makeid(s)})
 
 
-# In[227]:
-
-
-orggmrelationdict
-
 
 # #### Actually, the above is redundant
-
-# In[228]:
 
 
 # orgProjRelation - this may be redundant as well, but for completeness....
@@ -700,10 +512,6 @@ for i in range(orgprojrelation.shape[0]):
         orgprojrelationdict.update( {s : auxprefix + "prl_" + makeid(s)})
 
 
-# In[229]:
-
-
-orgprojrelationdict
 
 
 # #### Refining things
@@ -715,43 +523,25 @@ orgprojrelationdict
 # 
 # We will need to notate which of these 4 things goes in each cell (expand from 'd', 'o' to 4 things). Also we want to notate which of these entries we break apart into multiples if comma-separated. We also may need to know the prefix for the referenced entity in my hashcode system.
 
-# In[230]:
-
-
-'orgdf'
-
-
-# In[231]:
-
-
-eval('orgdf')
 
 
 # ### Making a graph
 # 
 # I think we're ready to start creating some rdf!
 
-# In[232]:
 
 
 # Initialize the in-memory RDF graph
 g = rdflib.Graph()
 
 
-# In[233]:
-
-
 # the first step is to get vocabularies loaded, in particular creating rdfs:labels for the entries
-
-
-# In[234]:
 
 
 rdfsuri = "http://www.w3.org/2000/01/rdf-schema#"
 rdfuri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
 
-# In[235]:
 
 
 for k in ecoregiondict.keys():
@@ -761,17 +551,12 @@ for k in ecoregiondict.keys():
     g.add((subj, pred, obj))
 
 
-# In[236]:
-
-
 for k in issuedict.keys():
     subj = rdflib.URIRef(issuedict[k])
     pred = rdflib.URIRef(rdfsuri + 'label')
     obj = rdflib.Literal(k)
     g.add((subj, pred, obj))
 
-
-# In[237]:
 
 
 for k in countydict.keys():
@@ -781,8 +566,6 @@ for k in countydict.keys():
     g.add((subj, pred, obj))
 
 
-# In[238]:
-
 
 for k in habtypedict.keys():
     subj = rdflib.URIRef(habtypedict[k])
@@ -791,7 +574,6 @@ for k in habtypedict.keys():
     g.add((subj, pred, obj))
 
 
-# In[239]:
 
 
 for k in orgtypedict.keys():
@@ -801,8 +583,6 @@ for k in orgtypedict.keys():
     g.add((subj, pred, obj))
 
 
-# In[240]:
-
 
 for k in orgactivitydict.keys():
     subj = rdflib.URIRef(orgactivitydict[k])
@@ -811,7 +591,6 @@ for k in orgactivitydict.keys():
     g.add((subj, pred, obj))
 
 
-# In[241]:
 
 
 for k in projtypedict.keys():
@@ -821,8 +600,6 @@ for k in projtypedict.keys():
     g.add((subj, pred, obj))
 
 
-# In[242]:
-
 
 for k in progtypedict.keys():
     subj = rdflib.URIRef(progtypedict[k])
@@ -831,7 +608,6 @@ for k in progtypedict.keys():
     g.add((subj, pred, obj))
 
 
-# In[243]:
 
 
 for k in gmtypedict.keys():
@@ -841,17 +617,12 @@ for k in gmtypedict.keys():
     g.add((subj, pred, obj))
 
 
-# In[244]:
-
-
 for k in govleveldict.keys():
     subj = rdflib.URIRef(govleveldict[k])
     pred = rdflib.URIRef(rdfsuri + 'label')
     obj = rdflib.Literal(k)
     g.add((subj, pred, obj))
 
-
-# In[245]:
 
 
 for k in positiontypedict.keys():
@@ -861,17 +632,11 @@ for k in positiontypedict.keys():
     g.add((subj, pred, obj))
 
 
-# In[246]:
-
-
 for k in projroledict.keys():
     subj = rdflib.URIRef(projroledict[k])
     pred = rdflib.URIRef(rdfsuri + 'label')
     obj = rdflib.Literal(k)
     g.add((subj, pred, obj))
-
-
-# In[247]:
 
 
 for k in orggmrelationdict.keys():
@@ -881,17 +646,11 @@ for k in orggmrelationdict.keys():
     g.add((subj, pred, obj))
 
 
-# In[248]:
-
-
 for k in orgprojrelationdict.keys():
     subj = rdflib.URIRef(orgprojrelationdict[k])
     pred = rdflib.URIRef(rdfsuri + 'label')
     obj = rdflib.Literal(k)
     g.add((subj, pred, obj))
-
-
-# In[249]:
 
 
 # now add the labels for the predicates
@@ -902,15 +661,8 @@ for k in predlabeldict.keys():
     g.add((subj, pred, obj))
 
 
-# In[250]:
-
-
-predlabeldict
-
 
 # Now for the great adventure. Take each of our sheets, go through the columns row-by-row, and add triples.
-
-# In[251]:
 
 
 # add a triple (or multiples maybe) to the graph g based on details in describing predicate
@@ -953,10 +705,6 @@ def addtriple(g, prdetails, subjval, cellval, subjectstr):
 
             
 
-
-# In[252]:
-
-
 # Organizations
 for r in range(orgdf.shape[0]):
     orgname = orgdf.iloc[r,0] 
@@ -969,9 +717,6 @@ for r in range(orgdf.shape[0]):
         if cellval != '':
             addtriple(g, orgpred[colname], subjval, cellval, orgname) 
         
-
-
-# In[253]:
 
 
 # Programs
@@ -987,7 +732,6 @@ for r in range(progdf.shape[0]):
             addtriple(g, progpred[colname], subjval, cellval, progname) 
 
 
-# In[254]:
 
 
 # Projects
@@ -1003,9 +747,6 @@ for r in range(projdf.shape[0]):
             addtriple(g, projpred[colname], subjval, cellval, projname) 
 
 
-# In[255]:
-
-
 # People
 for r in range(peopledf.shape[0]):
     pername = peopledf.iloc[r,0] 
@@ -1019,15 +760,12 @@ for r in range(peopledf.shape[0]):
             addtriple(g, personpred[colname], subjval, cellval, pername) 
 
 
-# In[256]:
-
 
 # And I just realized the tables below are creating *Roles*. This is a new class. I'd better add it.
 # It's in BFO - http://purl.obolibrary.org/obo/BFO_0000023
 g.add((rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023'), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal('Role')))
 
 
-# In[257]:
 
 
 # People-orgs
@@ -1041,9 +779,6 @@ for r in range(peopleorgdf.shape[0]):
         cellval = peopleorgdf.iloc[r,c]
         if cellval != '':
             addtriple(g, personorgpred[colname], subjval, cellval, rolestr) 
-
-
-# In[258]:
 
 
 # People-proj
@@ -1064,7 +799,6 @@ for r in range(peopleprojdf.shape[0]):
             addtriple(g, personprojpred[colname], subjval, cellval, rolestr) 
 
 
-# In[259]:
 
 
 # People-program
@@ -1081,8 +815,6 @@ for r in range(peopleprogramdf.shape[0]):
             addtriple(g, personprogrampred[colname], subjval, cellval, rolestr) 
 
 
-# In[260]:
-
 
 # guidelines/mandates
 for r in range(guidelinesdf.shape[0]):
@@ -1097,8 +829,6 @@ for r in range(guidelinesdf.shape[0]):
             addtriple(g, guidelinespred[colname], subjval, cellval, pername) 
 
 
-# In[261]:
-
 
 # organizations - guidelines/mandates
 # different logic here, the table is of triples
@@ -1109,10 +839,6 @@ for r in range(orggmdf.shape[0]):
     objval = auxprefix + "gmt_" + makeid(orggmdf.iloc[r,2]) 
     g.add((rdflib.URIRef(subjval), rdflib.URIRef(pred), rdflib.URIRef(objval)))
      
-
-
-# In[262]:
-
 
 # somewhat different logic for this table as well. columns C, D, E in this table form a class that
 # whose instances the GMs in column A point to with predicate in column B. The entries in this 
@@ -1131,9 +857,6 @@ for r in range(orgprojgmdf.shape[0]):
      
 
 
-# In[263]:
-
-
 # datasets
 for r in range(datasetdf.shape[0]):
     pername = datasetdf.iloc[r,0] 
@@ -1146,8 +869,6 @@ for r in range(datasetdf.shape[0]):
         if cellval != '':
             addtriple(g, datasetpred[colname], subjval, cellval, pername) 
 
-
-# In[264]:
 
 
 # tools
@@ -1163,14 +884,7 @@ for r in range(tooldf.shape[0]):
             addtriple(g, toolpred[colname], subjval, cellval, pername) 
 
 
-# In[265]:
 
 
 g.serialize(format="turtle", destination="./PPOD0.ttl")
-
-
-# In[ ]:
-
-
-
 
