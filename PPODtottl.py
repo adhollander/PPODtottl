@@ -15,49 +15,7 @@ import rdflib
 from pprint import pprint
 from oauth2client.service_account import ServiceAccountCredentials
 
-# get authorization to access Google Sheets
-# use creds to create a client to interact with the Google Drive API
-scope = ['https://spreadsheets.google.com/feeds']
-creds = ServiceAccountCredentials.from_json_keyfile_name('fsl-data-access-8731857cb6f9.json', scope)
-gssclient = gspread.authorize(creds)
-gsworkbook = gssclient.open_by_url('https://docs.google.com/spreadsheets/d/1k_BeTRklXz1aAh25DyYs1TIY7Okfa3jh6YJC6PQTUiE')
-
-
-# get pointers to all the relevant sheets
-vocab_sheet = gsworkbook.worksheet('Vocabularies')
-organizations_sheet = gsworkbook.worksheet('Organizations')
-projects_sheet = gsworkbook.worksheet('Projects')
-program_sheet = gsworkbook.worksheet('Programs')
-people_sheet = gsworkbook.worksheet('People')
-peopleorgs_sheet = gsworkbook.worksheet('PeopleOrg')
-peopleproj_sheet = gsworkbook.worksheet('PeopleProj')
-peopleprogram_sheet = gsworkbook.worksheet('PeopleProgram')
-guidelines_sheet = gsworkbook.worksheet('Guidelines_Mandates')
-orggm_sheet = gsworkbook.worksheet('OrgGM')
-orgprojgm_sheet = gsworkbook.worksheet('OrgProjGM')
-datasets_sheet = gsworkbook.worksheet('Datasets')
-tools_sheet = gsworkbook.worksheet('Tools')
-futureresources_sheet = gsworkbook.worksheet('Future Resources')
-intissues_sheet = gsworkbook.worksheet('Issues (Integrated)')
-compissues_sheet = gsworkbook.worksheet('Issues (Component)')
-
-# convert these to data frames
-vocabdf = pd.DataFrame(vocab_sheet.get_all_records())
-orgdf = pd.DataFrame(organizations_sheet.get_all_records())
-projdf = pd.DataFrame(projects_sheet.get_all_records())
-progdf = pd.DataFrame(program_sheet.get_all_records())
-peopledf = pd.DataFrame(people_sheet.get_all_records())
-peopleorgdf = pd.DataFrame(peopleorgs_sheet.get_all_records())
-peopleprojdf = pd.DataFrame(peopleproj_sheet.get_all_records())
-peopleprogramdf = pd.DataFrame(peopleprogram_sheet.get_all_records())
-guidelinesdf = pd.DataFrame(guidelines_sheet.get_all_records())
-orggmdf = pd.DataFrame(orggm_sheet.get_all_records())
-orgprojgmdf = pd.DataFrame(orgprojgm_sheet.get_all_records())
-datasetdf = pd.DataFrame(datasets_sheet.get_all_records())
-tooldf = pd.DataFrame(tools_sheet.get_all_records())
-intissuedf = pd.DataFrame(intissues_sheet.get_all_records())
-compissuedf = pd.DataFrame(compissues_sheet.get_all_records())
-
+##### Data #####
 
 # ### Incorporating our linked identifiers
 # 
@@ -66,18 +24,6 @@ compissuedf = pd.DataFrame(compissues_sheet.get_all_records())
 # * The rdf:type of each of the major sheets i.e. for each instance listing. This will be to an agreed-upon term (e.g. foaf:Organization)
 # * For the vocabs, they will all share the base URI for the ttl file itself, but might want to use our 24-bit hash thing for each term. Something like CaPPOD:vocab_A24D83. But the hash should concatenate the vocab name and the term name
 # * For all the columns in each sheet / dataframe, look up if we have any equivalent in PPOD / the OKN work, and use that terminology for those properties.
-
-
-
-# Let's create a minihash function for unique identifiers. I figure 24 bits is big enough (6 hex digits).
-# I'm just going to use crc32 and truncate the last two digits.
-def makeid(s):
-    hexid = hex(binascii.crc32(bytes(s.encode("utf-8"))))[2:8] 
-    return hexid
-
-
-# I figure I will use this as identifier suffixes for all these text names that are too long to abbreviate. E.g. 'Yuba County Resource Conservation District' becomes `CaPPOD:org_fb822f` using the `makeid` function.
-
 
 # The URIs for the major types in the workbook. 
 # Not sure about the guidelines/mandates one but this will do until 
@@ -300,6 +246,117 @@ toolpred = {
 
 
 
+
+##### Functions #####
+
+# Let's create a minihash function for unique identifiers. I figure 24 bits is big enough (6 hex digits).
+# I'm just going to use crc32 and truncate the last two digits.
+def makeid(s):
+    hexid = hex(binascii.crc32(bytes(s.encode("utf-8"))))[2:8] 
+    return hexid
+
+# I figure I will use this as identifier suffixes for all these text names that are too long to abbreviate. E.g. 'Yuba County Resource Conservation District' becomes `CaPPOD:org_fb822f` using the `makeid` function.
+
+# Return a dictionary giving the URI for a particular vocabulary term
+def makevocabdict(vocabdframe, vocabdfstr, auxprefix, prefixstr):
+    vrole = vocabdframe[vocabdfstr]
+    vdict = {}
+    for i in range(vrole.shape[0]):
+        s = vrole[i]
+        if len(s) > 0:
+            vdict.update({s : auxprefix + prefixstr + "_"  + makeid(s)})
+    return vdict
+
+
+# add a triple (or multiples maybe) to the graph g based on details in describing predicate
+def addtriple(g, prdetails, subjval, cellval, subjectstr):
+    subj =  rdflib.URIRef(subjval)
+    if cellval == 'All':
+        if prdetails[3] == 'countydict':
+            cellval = ','.join(countydict.keys())    
+        elif prdetails[3] == 'ecoregiondict':
+            cellval = ','.join(ecoregiondict.keys())
+    if prdetails[4] == 'm':
+        celllist = [s.strip() for s in cellval.split(',')]
+    else:
+        celllist = [cellval]
+    for cell in celllist:
+        if prdetails[0] == 'd':
+            pred = rdflib.URIRef(prdetails[1])
+            if 'usecase' in prdetails[1]:
+                if cell == 'X' or cell == 'x':
+                    obj = rdflib.Literal(True, datatype = rdflib.namespace.XSD.boolean)
+            else:
+                obj = rdflib.Literal(cell)
+            g.add((subj, pred, obj))
+        elif prdetails[0] == 'v':
+            try:
+                obj = rdflib.URIRef(eval(prdetails[3])[cell])
+                pred = rdflib.URIRef(prdetails[1])
+                g.add((subj, pred, obj))
+            except KeyError:
+                print(subjectstr + ": " + cell + " not in " + prdetails[3])
+                pass
+        elif prdetails[0] == 'o':
+            pred = rdflib.URIRef(prdetails[1])
+            obj = rdflib.URIRef( auxprefix + prdetails[3] + "_" + makeid(cell))
+            g.add((subj, pred, obj))
+        elif prdetails[0] == 'u':
+            pred = rdflib.URIRef(prdetails[1])
+            obj = rdflib.URIRef(cell)
+            g.add((subj, pred, obj))
+
+
+
+##### Actions #####
+
+
+
+# get authorization to access Google Sheets
+# use creds to create a client to interact with the Google Drive API
+scope = ['https://spreadsheets.google.com/feeds']
+creds = ServiceAccountCredentials.from_json_keyfile_name('fsl-data-access-8731857cb6f9.json', scope)
+gssclient = gspread.authorize(creds)
+gsworkbook = gssclient.open_by_url('https://docs.google.com/spreadsheets/d/1k_BeTRklXz1aAh25DyYs1TIY7Okfa3jh6YJC6PQTUiE')
+
+
+# get pointers to all the relevant sheets
+vocab_sheet = gsworkbook.worksheet('Vocabularies')
+organizations_sheet = gsworkbook.worksheet('Organizations')
+projects_sheet = gsworkbook.worksheet('Projects')
+program_sheet = gsworkbook.worksheet('Programs')
+people_sheet = gsworkbook.worksheet('People')
+peopleorgs_sheet = gsworkbook.worksheet('PeopleOrg')
+peopleproj_sheet = gsworkbook.worksheet('PeopleProj')
+peopleprogram_sheet = gsworkbook.worksheet('PeopleProgram')
+guidelines_sheet = gsworkbook.worksheet('Guidelines_Mandates')
+orggm_sheet = gsworkbook.worksheet('OrgGM')
+orgprojgm_sheet = gsworkbook.worksheet('OrgProjGM')
+datasets_sheet = gsworkbook.worksheet('Datasets')
+tools_sheet = gsworkbook.worksheet('Tools')
+futureresources_sheet = gsworkbook.worksheet('Future Resources')
+intissues_sheet = gsworkbook.worksheet('Issues (Integrated)')
+compissues_sheet = gsworkbook.worksheet('Issues (Component)')
+
+# convert these to data frames
+vocabdf = pd.DataFrame(vocab_sheet.get_all_records())
+orgdf = pd.DataFrame(organizations_sheet.get_all_records())
+projdf = pd.DataFrame(projects_sheet.get_all_records())
+progdf = pd.DataFrame(program_sheet.get_all_records())
+peopledf = pd.DataFrame(people_sheet.get_all_records())
+peopleorgdf = pd.DataFrame(peopleorgs_sheet.get_all_records())
+peopleprojdf = pd.DataFrame(peopleproj_sheet.get_all_records())
+peopleprogramdf = pd.DataFrame(peopleprogram_sheet.get_all_records())
+guidelinesdf = pd.DataFrame(guidelines_sheet.get_all_records())
+orggmdf = pd.DataFrame(orggm_sheet.get_all_records())
+orgprojgmdf = pd.DataFrame(orgprojgm_sheet.get_all_records())
+datasetdf = pd.DataFrame(datasets_sheet.get_all_records())
+tooldf = pd.DataFrame(tools_sheet.get_all_records())
+intissuedf = pd.DataFrame(intissues_sheet.get_all_records())
+compissuedf = pd.DataFrame(compissues_sheet.get_all_records())
+
+
+
 # Create dictionary of predicate URIs as keys and their labels as values
 predlabeldict = {}
 predsbyclasslist = [orgpred, projpred, progpred, personpred, personorgpred, personprojpred, personprogrampred, guidelinespred,
@@ -313,8 +370,6 @@ for predsbyclass in predsbyclasslist:
             predlabeldict[pred0URI] = pred0label
 
 
-
-predlabeldict
 
 
 # #### Vocabularies
@@ -331,14 +386,9 @@ predlabeldict
 intissuedict = {}
 intissueprefix = "http://asi.ice.ucdavis.edu/sustsource/schemas/sustsource.owl#"
 
-
-
-
-
 for i in range(intissuedf.shape[0]):
     #print(intissuedf.iloc[i,0], intissuedf.iloc[i,1])
     intissuedict.update( {intissuedf.iloc[i,1] : intissueprefix + intissuedf.iloc[i,0] })
-
 
 
 # Now for the component issues
@@ -358,8 +408,6 @@ issuedict = {**compissuedict , **intissuedict}
 counties_wd = pd.read_csv('CACounties_WD.csv')
 
 
-
-
 countydict = {}
 for i in range(counties_wd.shape[0]):
     countydict.update( {counties_wd.iloc[i,1] : counties_wd.iloc[i,0] })
@@ -369,13 +417,8 @@ for i in range(counties_wd.shape[0]):
 
 # For the rest of these vocabulary columns I'm going to use my minihash function.
 
-
-
 # Ecoregions
 ecoregions = vocabdf['Ecoregion_USDA']
-
-
-
 
 ecoregiondict = {}
 auxprefix = 'http://asi.ice.ucdavis.edu/sustsource/schemas/CA_PPODterms.ttl#' # needs to change!
@@ -385,9 +428,6 @@ for i in range(1, ecoregions.shape[0]):
         ecoregiondict.update( {s : auxprefix + "eco_" + makeid(s)})
         
     
-
-
-
 
 # habitat type, use CWHR here
 cwhrdf = pd.read_csv('CWHR_Habitat_Lookup_Table.csv')
@@ -417,8 +457,6 @@ for i in range(orgactivity.shape[0]):
 
 
 
-
-
 # ProjType
 projtype = vocabdf['ProjType']
 projtypedict = {}
@@ -426,11 +464,6 @@ for i in range(projtype.shape[0]):
     s = projtype[i]
     if len(s) > 0:
         projtypedict.update( {s : auxprefix + "pjt_" + makeid(s)})
-
-
-
-
-
 
 
 
@@ -665,43 +698,7 @@ for k in predlabeldict.keys():
 # Now for the great adventure. Take each of our sheets, go through the columns row-by-row, and add triples.
 
 
-# add a triple (or multiples maybe) to the graph g based on details in describing predicate
-def addtriple(g, prdetails, subjval, cellval, subjectstr):
-    subj =  rdflib.URIRef(subjval)
-    if cellval == 'All':
-        if prdetails[3] == 'countydict':
-            cellval = ','.join(countydict.keys())    
-        elif prdetails[3] == 'ecoregiondict':
-            cellval = ','.join(ecoregiondict.keys())
-    if prdetails[4] == 'm':
-        celllist = [s.strip() for s in cellval.split(',')]
-    else:
-        celllist = [cellval]
-    for cell in celllist:
-        if prdetails[0] == 'd':
-            pred = rdflib.URIRef(prdetails[1])
-            if 'usecase' in prdetails[1]:
-                if cell == 'X' or cell == 'x':
-                    obj = rdflib.Literal(True, datatype = rdflib.namespace.XSD.boolean)
-            else:
-                obj = rdflib.Literal(cell)
-            g.add((subj, pred, obj))
-        elif prdetails[0] == 'v':
-            try:
-                obj = rdflib.URIRef(eval(prdetails[3])[cell])
-                pred = rdflib.URIRef(prdetails[1])
-                g.add((subj, pred, obj))
-            except KeyError:
-                print(subjectstr + ": " + cell + " not in " + prdetails[3])
-                pass
-        elif prdetails[0] == 'o':
-            pred = rdflib.URIRef(prdetails[1])
-            obj = rdflib.URIRef( auxprefix + prdetails[3] + "_" + makeid(cell))
-            g.add((subj, pred, obj))
-        elif prdetails[0] == 'u':
-            pred = rdflib.URIRef(prdetails[1])
-            obj = rdflib.URIRef(cell)
-            g.add((subj, pred, obj))
+
 
             
 
