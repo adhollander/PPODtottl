@@ -125,7 +125,7 @@ projpred = {"Project": ('d', 'http://xmlns.com/foaf/0.1/Project', 'project', '',
 progpred = {
             "Program": ('d', 'http://vivoweb.org/ontology/core#Program', 'program', '', 's'),    
             "Alias":   ('d', 'http://www.w3.org/2004/02/skos/core#altLabel', 'alias', '', 's'),
-            "ProgType": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#progType', 'program yype', 'progtypedict', 'm'),
+            "ProgType": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#progType', 'program type', 'progtypedict', 'm'),
             "Organization": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#leadOrg', 'lead organization', 'org', 'm'),
             "Partners": ('o', 'http://vivoweb.org/ontology/core#affiliatedOrganization', 'partner organization', 'org', 'm'),
             "Issues": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#FSI_000239', 'related sustainability issue', 'issuedict', 'm'),
@@ -276,6 +276,7 @@ def makevocabdict(vocabdframe, vocabdfstr, auxprefix, prefixstr):
 
 # add a triple (or multiples maybe) to the graph g based on details in describing predicate
 def addtriple(g, prdetails, subjval, cellval, subjectstr):
+    # print(subjval, cellval)
     subj =  rdflib.URIRef(subjval)
     if cellval == 'All':
         if prdetails[3] == 'countydict':
@@ -313,10 +314,12 @@ def addtriple(g, prdetails, subjval, cellval, subjectstr):
             g.add((subj, pred, obj))
 
 def adddicttograph(dicttoadd, gr, labeluri):
+ #   print("inadddictograph with ", dicttoadd)
     for k in dicttoadd.keys():
         subj = rdflib.URIRef(dicttoadd[k])
         pred = rdflib.URIRef(labeluri + 'label')
         obj = rdflib.Literal(k)
+#       print(k)
         gr.add((subj, pred, obj))
 
 
@@ -487,7 +490,14 @@ g = rdflib.Graph()
 
 
 # the first step is to get vocabularies loaded, in particular creating rdfs:labels for the entries
-map(lambda d: adddicttograph(d, g, rdfsuri), [ecoregiondict, issuedict, countydict, habtypedict, orgtypedict, orgactivitydict, projtypedict, progtypedict, gmtypedict, govleveldict, positiontypedict, projroledict, orggmrelationdict, orgprojrelationdict, predlabeldict])
+list(map(lambda d: adddicttograph(d, g, rdfsuri), [ecoregiondict, issuedict, countydict, habtypedict, orgtypedict, orgactivitydict, projtypedict, progtypedict, gmtypedict, govleveldict, positiontypedict, projroledict, orggmrelationdict, orgprojrelationdict]))
+
+# now add the labels for the predicates
+for k in predlabeldict.keys():
+    subj = rdflib.URIRef(k)
+    pred = rdflib.URIRef(rdfsuri + 'label')
+    obj = rdflib.Literal(predlabeldict[k])
+    g.add((subj, pred, obj))
 
 
 
@@ -673,4 +683,8 @@ for r in range(tooldf.shape[0]):
 
 # Now write the graph out!
 g.serialize(format="turtle", destination="./PPOD0.ttl")
+
+
+# fixed the labels problem (needed a list for the map), but get
+# Exception: "FSL doc" does not look like a valid URI, I cannot serialize this as N3/Turtle. Perhaps you wanted to urlencode it?
 
