@@ -27,7 +27,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 
 # Some namespaces
-auxprefix = 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#' # needs to change!
+auxprefix = 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#' # one of these days we'll have a better namespace but at least this is accessible
 rdfsuri = "http://www.w3.org/2000/01/rdf-schema#"
 rdfuri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 
@@ -54,8 +54,10 @@ PPODrefs = {'Organizations': 'http://xmlns.com/foaf/0.1/Organization',
 # URI for property, label string for property, either name of dictionary (string) for 'v' or hash code prefix for 'o'),
 # then 's' or 'm' for comma-delimiting string split
 # to repeat: ([d|o|v|u], property URI, property label, string for dictionary name or prefix, '[s|m]')
-
+# There is one of these dictionaries for every sheet in the overall google spreadsheet
 # Organization predicates dictionary
+# The key in each entry in this dictionary is the column label in the sheet, the value
+# is the tuple described above characterizing each property and its URI
 orgpred = {"Organization": ('d', 'http://purl.org/dc/terms/title', 'title', '', 's'),
             "Alias": ('d', 'http://www.w3.org/2004/02/skos/core#altLabel', 'alias', '', 's'),
             "isPartOf": ('o', 'http://purl.org/dc/terms/isPartOf', 'is part of', 'org','m'),
@@ -83,7 +85,6 @@ orgpred = {"Organization": ('d', 'http://purl.org/dc/terms/title', 'title', '', 
           }
            
         
-# usecaseConservation	usecaseMeat	usecaseSac	usecaseSCAG	usecaseEcuador
 
 # Project predicates dictionary
 projpred = {"Project": ('d', 'http://xmlns.com/foaf/0.1/Project', 'project', '','s'),
@@ -257,11 +258,12 @@ toolpred = {
 
 # Let's create a minihash function for unique identifiers. I figure 24 bits is big enough (6 hex digits).
 # I'm just going to use crc32 and truncate the last two digits.
+# I figure I will use this as identifier suffixes for all these text names that are too long to abbreviate. E.g. 'Yuba County Resource Conservation District' becomes `CaPPOD:org_fb822f` using the `makeid` function.
+# Example: makeid('Audubon California') returns '167f6c'
 def makeid(s):
     hexid = hex(binascii.crc32(bytes(s.encode("utf-8"))))[2:8] 
     return hexid
 
-# I figure I will use this as identifier suffixes for all these text names that are too long to abbreviate. E.g. 'Yuba County Resource Conservation District' becomes `CaPPOD:org_fb822f` using the `makeid` function.
 
 # Return a dictionary giving the URI for a particular vocabulary term
 def makevocabdict(vocabdframe, vocabdfstr, auxprefix, prefixstr):
@@ -330,6 +332,7 @@ def adddicttograph(dicttoadd, gr, labeluri):
 
 # get authorization to access Google Sheets
 # use creds to create a client to interact with the Google Drive API
+
 scope = ['https://spreadsheets.google.com/feeds']
 creds = ServiceAccountCredentials.from_json_keyfile_name('fsl-data-access-8731857cb6f9.json', scope)
 gssclient = gspread.authorize(creds)
