@@ -296,6 +296,8 @@ def addtriple(g, prdetails, subjval, cellval, subjectstr):
                 if cell == 'X' or cell == 'x':
                     obj = rdflib.Literal(True, datatype = rdflib.namespace.XSD.boolean)
             else:
+                if prdetails[3] == 'countydict':
+                    cell = cell + " County"
                 obj = rdflib.Literal(cell)
             g.add((subj, pred, obj))
         elif prdetails[0] == 'v':
@@ -316,378 +318,401 @@ def addtriple(g, prdetails, subjval, cellval, subjectstr):
             g.add((subj, pred, obj))
 
 def adddicttograph(dicttoadd, gr, labeluri):
- #   print("inadddictograph with ", dicttoadd)
+    #print("inadddictograph with ", labeluri)
     for k in dicttoadd.keys():
         subj = rdflib.URIRef(dicttoadd[k])
         pred = rdflib.URIRef(labeluri + 'label')
-        obj = rdflib.Literal(k)
-#       print(k)
+        if dicttoadd == countydict:
+            obj = rdflib.Literal(k + ' County')
+        else:
+            obj = rdflib.Literal(k)
+        # print(k)
         gr.add((subj, pred, obj))
 
 
 
 ##### Actions #####
 
+def creategraph():
+
+    # get authorization to access Google Sheets
+    # use creds to create a client to interact with the Google Drive API
+
+    scope = ['https://spreadsheets.google.com/feeds']
+    creds = ServiceAccountCredentials.from_json_keyfile_name('fsl-data-access-8731857cb6f9.json', scope)
+    gssclient = gspread.authorize(creds)
+    gsworkbook = gssclient.open_by_url('https://docs.google.com/spreadsheets/d/1k_BeTRklXz1aAh25DyYs1TIY7Okfa3jh6YJC6PQTUiE')
 
 
-# get authorization to access Google Sheets
-# use creds to create a client to interact with the Google Drive API
+    # get pointers to all the relevant sheets
+    vocab_sheet = gsworkbook.worksheet('Vocabularies')
+    organizations_sheet = gsworkbook.worksheet('Organizations')
+    projects_sheet = gsworkbook.worksheet('Projects')
+    program_sheet = gsworkbook.worksheet('Programs')
+    people_sheet = gsworkbook.worksheet('People')
+    peopleorgs_sheet = gsworkbook.worksheet('PeopleOrg')
+    peopleproj_sheet = gsworkbook.worksheet('PeopleProj')
+    peopleprogram_sheet = gsworkbook.worksheet('PeopleProgram')
+    guidelines_sheet = gsworkbook.worksheet('Guidelines_Mandates')
+    orggm_sheet = gsworkbook.worksheet('OrgGM')
+    orgprojgm_sheet = gsworkbook.worksheet('OrgProjGM')
+    datasets_sheet = gsworkbook.worksheet('Datasets')
+    tools_sheet = gsworkbook.worksheet('Tools')
+    futureresources_sheet = gsworkbook.worksheet('Future Resources')
+    intissues_sheet = gsworkbook.worksheet('Issues (Integrated)')
+    compissues_sheet = gsworkbook.worksheet('Issues (Component)')
 
-scope = ['https://spreadsheets.google.com/feeds']
-creds = ServiceAccountCredentials.from_json_keyfile_name('fsl-data-access-8731857cb6f9.json', scope)
-gssclient = gspread.authorize(creds)
-gsworkbook = gssclient.open_by_url('https://docs.google.com/spreadsheets/d/1k_BeTRklXz1aAh25DyYs1TIY7Okfa3jh6YJC6PQTUiE')
-
-
-# get pointers to all the relevant sheets
-vocab_sheet = gsworkbook.worksheet('Vocabularies')
-organizations_sheet = gsworkbook.worksheet('Organizations')
-projects_sheet = gsworkbook.worksheet('Projects')
-program_sheet = gsworkbook.worksheet('Programs')
-people_sheet = gsworkbook.worksheet('People')
-peopleorgs_sheet = gsworkbook.worksheet('PeopleOrg')
-peopleproj_sheet = gsworkbook.worksheet('PeopleProj')
-peopleprogram_sheet = gsworkbook.worksheet('PeopleProgram')
-guidelines_sheet = gsworkbook.worksheet('Guidelines_Mandates')
-orggm_sheet = gsworkbook.worksheet('OrgGM')
-orgprojgm_sheet = gsworkbook.worksheet('OrgProjGM')
-datasets_sheet = gsworkbook.worksheet('Datasets')
-tools_sheet = gsworkbook.worksheet('Tools')
-futureresources_sheet = gsworkbook.worksheet('Future Resources')
-intissues_sheet = gsworkbook.worksheet('Issues (Integrated)')
-compissues_sheet = gsworkbook.worksheet('Issues (Component)')
-
-# convert these to data frames
-vocabdf = pd.DataFrame(vocab_sheet.get_all_records())
-orgdf = pd.DataFrame(organizations_sheet.get_all_records())
-projdf = pd.DataFrame(projects_sheet.get_all_records())
-progdf = pd.DataFrame(program_sheet.get_all_records())
-peopledf = pd.DataFrame(people_sheet.get_all_records())
-peopleorgdf = pd.DataFrame(peopleorgs_sheet.get_all_records())
-peopleprojdf = pd.DataFrame(peopleproj_sheet.get_all_records())
-peopleprogramdf = pd.DataFrame(peopleprogram_sheet.get_all_records())
-guidelinesdf = pd.DataFrame(guidelines_sheet.get_all_records())
-orggmdf = pd.DataFrame(orggm_sheet.get_all_records())
-orgprojgmdf = pd.DataFrame(orgprojgm_sheet.get_all_records())
-datasetdf = pd.DataFrame(datasets_sheet.get_all_records())
-tooldf = pd.DataFrame(tools_sheet.get_all_records())
-intissuedf = pd.DataFrame(intissues_sheet.get_all_records())
-compissuedf = pd.DataFrame(compissues_sheet.get_all_records())
-
-
-
-# Create dictionary of predicate URIs as keys and their labels as values
-predlabeldict = {}
-predsbyclasslist = [orgpred, projpred, progpred, personpred, personorgpred, personprojpred, personprogrampred, guidelinespred,
-           orggmpred, orgprojgmpred, datasetpred, toolpred]
-for predsbyclass in predsbyclasslist:
-    for pred0 in predsbyclass.keys():
-        pred0val = predsbyclass[pred0]
-        pred0URI = pred0val[1]
-        pred0label = pred0val[2]
-        if pred0URI not in predlabeldict: # the first in is the winner
-            predlabeldict[pred0URI] = pred0label
+    # convert these to data frames
+    vocabdf = pd.DataFrame(vocab_sheet.get_all_records())
+    orgdf = pd.DataFrame(organizations_sheet.get_all_records())
+    projdf = pd.DataFrame(projects_sheet.get_all_records())
+    progdf = pd.DataFrame(program_sheet.get_all_records())
+    peopledf = pd.DataFrame(people_sheet.get_all_records())
+    peopleorgdf = pd.DataFrame(peopleorgs_sheet.get_all_records())
+    peopleprojdf = pd.DataFrame(peopleproj_sheet.get_all_records())
+    peopleprogramdf = pd.DataFrame(peopleprogram_sheet.get_all_records())
+    guidelinesdf = pd.DataFrame(guidelines_sheet.get_all_records())
+    orggmdf = pd.DataFrame(orggm_sheet.get_all_records())
+    orgprojgmdf = pd.DataFrame(orgprojgm_sheet.get_all_records())
+    datasetdf = pd.DataFrame(datasets_sheet.get_all_records())
+    tooldf = pd.DataFrame(tools_sheet.get_all_records())
+    intissuedf = pd.DataFrame(intissues_sheet.get_all_records())
+    compissuedf = pd.DataFrame(compissues_sheet.get_all_records())
 
 
 
-
-# #### Vocabularies
-# 
-# The first sheet (vocab_sheet) is a listing of vocabularies in use. Each column is a separate vocabulary. Some of
-# these (e.g. issues) we've already established URIs for (though I might want to port them, but that's another story), others are new terms. How should I handle all these?
-# Each of these terms should get loaded into a dictionary, probably a separate one for each column. 
-# Both County and Ecoregions have an "all" term, which is best handled by some special code dumping in all 58 counties e.g. 
-
-# For the issues, we want to use our established terms. The intissues and compissues sheets gives the suffixes for these. 
-
-
-
-intissuedict = {}
-intissueprefix = "https://raw.githubusercontent.com/adhollander/FSLschemas/main/sustsource.owl#"
-
-for i in range(intissuedf.shape[0]):
-    #print(intissuedf.iloc[i,0], intissuedf.iloc[i,1])
-    intissuedict.update( {intissuedf.iloc[i,1] : intissueprefix + intissuedf.iloc[i,0] })
-
-
-# Now for the component issues
-compissuedict = {}
-compissueprefix = "https://raw.githubusercontent.com/adhollander/FSLschemas/main/sustsourceindiv.rdf#"
-for i in range(compissuedf.shape[0]):
-    compissuedict.update( {compissuedf.iloc[i,1] : compissueprefix + compissuedf.iloc[i,0] })
-
-
-
-# we want to merge these two dictionaries
-issuedict = {**compissuedict , **intissuedict} 
-
-
-# #### Counties
-# After some search, have opted to use Wikidata URIs for the California counties. I grabbed these from Wikidata using their SPARQL query interface.
-counties_wd = pd.read_csv('CACounties_WD.csv')
-
-
-countydict = {}
-for i in range(counties_wd.shape[0]):
-    countydict.update( {counties_wd.iloc[i,1] : counties_wd.iloc[i,0] })
+    # Create dictionary of predicate URIs as keys and their labels as values
+    predlabeldict = {}
+    predsbyclasslist = [orgpred, projpred, progpred, personpred, personorgpred, personprojpred, personprogrampred, guidelinespred,
+            orggmpred, orgprojgmpred, datasetpred, toolpred]
+    for predsbyclass in predsbyclasslist:
+        for pred0 in predsbyclass.keys():
+            pred0val = predsbyclass[pred0]
+            pred0URI = pred0val[1]
+            pred0label = pred0val[2]
+            if pred0URI not in predlabeldict: # the first in is the winner
+                predlabeldict[pred0URI] = pred0label
 
 
 
 
-# For the rest of these vocabulary columns I'm going to use my minihash function.
+    # #### Vocabularies
+    # 
+    # The first sheet (vocab_sheet) is a listing of vocabularies in use. Each column is a separate vocabulary. Some of
+    # these (e.g. issues) we've already established URIs for (though I might want to port them, but that's another story), others are new terms. How should I handle all these?
+    # Each of these terms should get loaded into a dictionary, probably a separate one for each column. 
+    # Both County and Ecoregions have an "all" term, which is best handled by some special code dumping in all 58 counties e.g. 
 
-# Ecoregions
-ecoregions = vocabdf['Ecoregion_USDA']
-
-ecoregiondict = {}
-for i in range(1, ecoregions.shape[0]):
-    s = ecoregions[i]
-    if len(s) > 0:
-        ecoregiondict.update( {s : auxprefix + "eco_" + makeid(s)})
-        
-    
-
-# habitat type, use CWHR here
-cwhrdf = pd.read_csv('CWHR_Habitat_Lookup_Table.csv')
-habtypedict = {}
-for i in range(cwhrdf.shape[0]):
-    habtypedict.update( {cwhrdf.iloc[i,0] : 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#whr_' + cwhrdf.iloc[i,0] })
-
-orgtypedict = makevocabdict(vocabdf, 'OrgType', auxprefix, 'oty')
-orgactivitydict = makevocabdict(vocabdf, 'OrgActivity', auxprefix, 'oac')
-projtypedict = makevocabdict(vocabdf, 'ProjType', auxprefix, 'pjt')
-progtypedict = makevocabdict(vocabdf, 'ProgType', auxprefix, 'pgt')
-gmtypedict = makevocabdict(vocabdf, 'GMType', auxprefix, 'gmn')
-govleveldict = makevocabdict(vocabdf, 'GovLevel', auxprefix, 'gvl')
-positiontypedict = makevocabdict(vocabdf, 'PositionType', auxprefix, 'pst')
-projroledict = makevocabdict(vocabdf, 'PeopleProjRole', auxprefix, 'prl')
-orggmrelationdict = makevocabdict(vocabdf, 'orgGMRelation', auxprefix, 'pst') # is prefix correct?
-# orgGMRelation - might handle this in different manner - these are properties. But I'll create the dict for now.
-# #### Actually, the above is redundant
-orgprojrelationdict = makevocabdict(vocabdf, 'orgProjRelation', auxprefix, 'prl') 
-# orgProjRelation - this may be redundant as well, but for completeness....
+    # For the issues, we want to use our established terms. The intissues and compissues sheets gives the suffixes for these. 
 
 
 
+    intissuedict = {}
+    intissueprefix = "https://raw.githubusercontent.com/adhollander/FSLschemas/main/sustsource.owl#"
+
+    for i in range(intissuedf.shape[0]):
+        #print(intissuedf.iloc[i,0], intissuedf.iloc[i,1])
+        intissuedict.update( {intissuedf.iloc[i,1] : intissueprefix + intissuedf.iloc[i,0] })
 
 
-# #### Refining things
-# Each cell of the sheets can refer to 4 different things I think. These will have different treatments. They can be:
-# * Literals. Just add them as strings
-# * References to other objects in this spreadsheet system.
-# * References to outside URLs
-# * References to vocabularies. These are stored in this script as dictionaries.
-# 
-# We will need to notate which of these 4 things goes in each cell (expand from 'd', 'o' to 4 things). Also we want to notate which of these entries we break apart into multiples if comma-separated. We also may need to know the prefix for the referenced entity in my hashcode system.
-
-
-
-# ### Making a graph
-# 
-# I think we're ready to start creating some rdf!
+    # Now for the component issues
+    compissuedict = {}
+    compissueprefix = "https://raw.githubusercontent.com/adhollander/FSLschemas/main/sustsourceindiv.rdf#"
+    for i in range(compissuedf.shape[0]):
+        compissuedict.update( {compissuedf.iloc[i,1] : compissueprefix + compissuedf.iloc[i,0] })
 
 
 
-# Initialize the in-memory RDF graph
-g = rdflib.Graph()
+    # we want to merge these two dictionaries
+    global issuedict
+    issuedict = {**compissuedict , **intissuedict} 
 
 
-# the first step is to get vocabularies loaded, in particular creating rdfs:labels for the entries
-list(map(lambda d: adddicttograph(d, g, rdfsuri), [ecoregiondict, issuedict, countydict, habtypedict, orgtypedict, orgactivitydict, projtypedict, progtypedict, gmtypedict, govleveldict, positiontypedict, projroledict, orggmrelationdict, orgprojrelationdict]))
+    # #### Counties
+    # After some search, have opted to use Wikidata URIs for the California counties. I grabbed these from Wikidata using their SPARQL query interface.
+    counties_wd = pd.read_csv('CACounties_WD.csv')
 
-# now add the labels for the predicates
-for k in predlabeldict.keys():
-    subj = rdflib.URIRef(k)
-    pred = rdflib.URIRef(rdfsuri + 'label')
-    obj = rdflib.Literal(predlabeldict[k])
-    g.add((subj, pred, obj))
-
+    global countydict # I am aware this is poor style, thank you, but I need to handle the "All" county issue
+    countydict = {}
+    for i in range(counties_wd.shape[0]):
+        countydict.update( {counties_wd.iloc[i,1] : counties_wd.iloc[i,0] })
 
 
-# Now for the great adventure. Take each of our sheets, go through the columns row-by-row, and add triples.
 
 
-# Organizations
-for r in range(orgdf.shape[0]):
-    orgname = orgdf.iloc[r,0] 
-    subjval = auxprefix + "org_" + makeid(orgname)
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Organizations'])))
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(orgname)))
-    for c in range(orgdf.shape[1]):
-        colname = orgdf.columns[c]
-        cellval = orgdf.iloc[r,c]
-        if cellval != '':
-            addtriple(g, orgpred[colname], subjval, cellval, orgname) 
+    # For the rest of these vocabulary columns I'm going to use my minihash function.
+
+    # Ecoregions
+    ecoregions = vocabdf['Ecoregion_USDA']
+    global ecoregiondict # likewise on the poor style
+    ecoregiondict = {}
+    for i in range(1, ecoregions.shape[0]):
+        s = ecoregions[i]
+        if len(s) > 0:
+            ecoregiondict.update( {s : auxprefix + "eco_" + makeid(s)})
+            
         
 
-
-# Programs
-for r in range(progdf.shape[0]):
-    progname = progdf.iloc[r,0] 
-    subjval = auxprefix + "prg_" + makeid(progname)
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Programs'])))
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(progname)))
-    for c in range(progdf.shape[1]):  
-        colname = progdf.columns[c]
-        cellval = progdf.iloc[r,c]
-        if cellval != '':
-            addtriple(g, progpred[colname], subjval, cellval, progname) 
-
-
-
-
-# Projects
-for r in range(projdf.shape[0]):
-    projname = projdf.iloc[r,0] 
-    subjval = auxprefix + "prj_" + makeid(projname)
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Projects'])))
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(projname)))
-    for c in range(projdf.shape[1]): 
-        colname = projdf.columns[c]
-        cellval = projdf.iloc[r,c]
-        if cellval != '':
-            addtriple(g, projpred[colname], subjval, cellval, projname) 
-
-
-# People
-for r in range(peopledf.shape[0]):
-    pername = peopledf.iloc[r,0] 
-    subjval = auxprefix + "per_" + makeid(pername)
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['People'])))
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
-    for c in range(peopledf.shape[1]):  
-        colname = peopledf.columns[c]
-        cellval = peopledf.iloc[r,c]
-        if cellval != '':
-            addtriple(g, personpred[colname], subjval, cellval, pername) 
-
-
-
-# And I just realized the tables below are creating *Roles*. This is a new class. I'd better add it.
-# It's in BFO - http://purl.obolibrary.org/obo/BFO_0000023
-g.add((rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023'), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal('Role')))
+    # habitat type, use CWHR here
+    cwhrdf = pd.read_csv('CWHR_Habitat_Lookup_Table.csv')
+    global habtypedict
+    habtypedict = {}
+    for i in range(cwhrdf.shape[0]):
+        habtypedict.update( {cwhrdf.iloc[i,0] : 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#whr_' + cwhrdf.iloc[i,0] })
+    global orgtypedict
+    orgtypedict = makevocabdict(vocabdf, 'OrgType', auxprefix, 'oty')
+    global orgactivitydict
+    orgactivitydict = makevocabdict(vocabdf, 'OrgActivity', auxprefix, 'oac')
+    global projtypedict
+    projtypedict = makevocabdict(vocabdf, 'ProjType', auxprefix, 'pjt')
+    global progtypedict
+    progtypedict = makevocabdict(vocabdf, 'ProgType', auxprefix, 'pgt')
+    global gmtypedict
+    gmtypedict = makevocabdict(vocabdf, 'GMType', auxprefix, 'gmn')
+    global govleveldict
+    govleveldict = makevocabdict(vocabdf, 'GovLevel', auxprefix, 'gvl')
+    global positiontypedict
+    positiontypedict = makevocabdict(vocabdf, 'PositionType', auxprefix, 'pst')
+    global projroledict
+    projroledict = makevocabdict(vocabdf, 'PeopleProjRole', auxprefix, 'prl')
+    global orggmrelationdict
+    orggmrelationdict = makevocabdict(vocabdf, 'orgGMRelation', auxprefix, 'pst') # is prefix correct?
+    # orgGMRelation - might handle this in different manner - these are properties. But I'll create the dict for now.
+    # #### Actually, the above is redundant
+    global orgprojrelationdict
+    orgprojrelationdict = makevocabdict(vocabdf, 'orgProjRelation', auxprefix, 'prl') 
+    # orgProjRelation - this may be redundant as well, but for completeness....
 
 
 
 
-# People-orgs
-for r in range(peopleorgdf.shape[0]):
-    rolestr = peopleorgdf.iloc[r,0] + peopleorgdf.iloc[r,1] + peopleorgdf.iloc[r,2]
-    subjval = auxprefix + "rol_" + makeid(rolestr)
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(peopleorgdf.iloc[r,2])))
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))
-    for c in range(peopleorgdf.shape[1]):  
-        colname = peopleorgdf.columns[c]
-        cellval = peopleorgdf.iloc[r,c]
-        if cellval != '':
-            addtriple(g, personorgpred[colname], subjval, cellval, rolestr) 
 
-
-# People-proj
-for r in range(peopleprojdf.shape[0]):
-    if peopleprojdf.iloc[r,2] == '':
-        newrole = 'Participant'
-    else:
-        newrole = peopleprojdf.iloc[r,2]
-    rolestr = peopleprojdf.iloc[r,0] + peopleprojdf.iloc[r,1] + newrole  
-    #pername = peopleprojdf.iloc[r,0] 
-    subjval = auxprefix + "rol_" + makeid(rolestr)
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(newrole)))
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))    
-    for c in range(peopleprojdf.shape[1]):  
-        colname = peopleprojdf.columns[c]
-        cellval = peopleprojdf.iloc[r,c]
-        if cellval != '':
-            addtriple(g, personprojpred[colname], subjval, cellval, rolestr) 
+    # #### Refining things
+    # Each cell of the sheets can refer to 4 different things I think. These will have different treatments. They can be:
+    # * Literals. Just add them as strings
+    # * References to other objects in this spreadsheet system.
+    # * References to outside URLs
+    # * References to vocabularies. These are stored in this script as dictionaries.
+    # 
+    # We will need to notate which of these 4 things goes in each cell (expand from 'd', 'o' to 4 things). Also we want to notate which of these entries we break apart into multiples if comma-separated. We also may need to know the prefix for the referenced entity in my hashcode system.
 
 
 
-
-# People-program
-for r in range(peopleprogramdf.shape[0]):
-    rolestr = peopleorgdf.iloc[r,0] + peopleorgdf.iloc[r,1] + peopleorgdf.iloc[r,2]
-    #pername = peopleprogramdf.iloc[r,0] 
-    subjval = auxprefix + "rol_" + makeid(rolestr)
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(peopleorgdf.iloc[r,2])))
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))    
-    for c in range(peopleprogramdf.shape[1]):
-        colname = peopleprogramdf.columns[c]
-        cellval = peopleprogramdf.iloc[r,c]
-        if cellval != '':
-            addtriple(g, personprogrampred[colname], subjval, cellval, rolestr) 
+    # ### Making a graph
+    # 
+    # I think we're ready to start creating some rdf!
 
 
 
-# guidelines/mandates
-for r in range(guidelinesdf.shape[0]):
-    pername = guidelinesdf.iloc[r,0] 
-    subjval = auxprefix + "gmt_" + makeid(pername)
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Guidelines_Mandates'])))        
-    for c in range(guidelinesdf.shape[1]): 
-        colname = guidelinesdf.columns[c]
-        cellval = guidelinesdf.iloc[r,c]
-        if cellval != '':
-            addtriple(g, guidelinespred[colname], subjval, cellval, pername) 
+    # Initialize the in-memory RDF graph
+    g = rdflib.Graph()
+
+
+    # the first step is to get vocabularies loaded, in particular creating rdfs:labels for the entries
+    list(map(lambda d: adddicttograph(d, g, rdfsuri), [ecoregiondict, issuedict, countydict, habtypedict, orgtypedict, orgactivitydict, projtypedict, progtypedict, gmtypedict, govleveldict, positiontypedict, projroledict, orggmrelationdict, orgprojrelationdict]))
+
+    # now add the labels for the predicates
+    for k in predlabeldict.keys():
+        subj = rdflib.URIRef(k)
+        pred = rdflib.URIRef(rdfsuri + 'label')
+        obj = rdflib.Literal(predlabeldict[k])
+        g.add((subj, pred, obj))
 
 
 
-# organizations - guidelines/mandates
-# different logic here, the table is of triples
-for r in range(orggmdf.shape[0]):
-    orgname = orggmdf.iloc[r,0] 
-    subjval = auxprefix + "org_" + makeid(orgname)
-    pred = orggmpred[orggmdf.iloc[r,1]][1]
-    objval = auxprefix + "gmt_" + makeid(orggmdf.iloc[r,2]) 
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(pred), rdflib.URIRef(objval)))
-     
-
-# somewhat different logic for this table as well. columns C, D, E in this table form a class that
-# whose instances the GMs in column A point to with predicate in column B. The entries in this 
-# dictionary are for columns C, D, and E  --- from above
-for r in range(orgprojgmdf.shape[0]):
-    rolestr = orgprojgmdf.iloc[r,2] + orgprojgmdf.iloc[r,3] + orgprojgmdf.iloc[r,4]
-    roleval = auxprefix + "rol_" + makeid(rolestr)
-    g.add((rdflib.URIRef(roleval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(orgprojgmdf.iloc[r,3])))
-    g.add((rdflib.URIRef(roleval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))
-    gmname = orgprojgmdf.iloc[r,0] 
-    subjval = auxprefix + "gmt_" + makeid(gmname)
-    pred = orggmrelationdict[orgprojgmdf.iloc[r,1]]                                                                            
-    objval = roleval
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(pred), rdflib.URIRef(objval)))
-     
+    # Now for the great adventure. Take each of our sheets, go through the columns row-by-row, and add triples.
 
 
-# datasets
-for r in range(datasetdf.shape[0]):
-    pername = datasetdf.iloc[r,0] 
-    subjval = auxprefix + "dat_" + makeid(pername)
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Datasets'])))
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
-    for c in range(datasetdf.shape[1]): 
-        colname = datasetdf.columns[c]
-        cellval = datasetdf.iloc[r,c]
-        if cellval != '':
-            addtriple(g, datasetpred[colname], subjval, cellval, pername) 
+    # Organizations
+    for r in range(orgdf.shape[0]):
+        orgname = orgdf.iloc[r,0] 
+        subjval = auxprefix + "org_" + makeid(orgname)
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Organizations'])))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(orgname)))
+        for c in range(orgdf.shape[1]):
+            colname = orgdf.columns[c]
+            cellval = orgdf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, orgpred[colname], subjval, cellval, orgname) 
+            
+
+
+    # Programs
+    for r in range(progdf.shape[0]):
+        progname = progdf.iloc[r,0] 
+        subjval = auxprefix + "prg_" + makeid(progname)
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Programs'])))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(progname)))
+        for c in range(progdf.shape[1]):  
+            colname = progdf.columns[c]
+            cellval = progdf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, progpred[colname], subjval, cellval, progname) 
 
 
 
-# tools
-for r in range(tooldf.shape[0]):
-    pername = tooldf.iloc[r,0] 
-    subjval = auxprefix + "tol_" + makeid(pername)
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Tools'])))
-    g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
-    for c in range(tooldf.shape[1]):  
-        colname = tooldf.columns[c]
-        cellval = tooldf.iloc[r,c]
-        if cellval != '':
-            addtriple(g, toolpred[colname], subjval, cellval, pername) 
 
+    # Projects
+    for r in range(projdf.shape[0]):
+        projname = projdf.iloc[r,0] 
+        subjval = auxprefix + "prj_" + makeid(projname)
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Projects'])))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(projname)))
+        for c in range(projdf.shape[1]): 
+            colname = projdf.columns[c]
+            cellval = projdf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, projpred[colname], subjval, cellval, projname) 
+
+
+    # People
+    for r in range(peopledf.shape[0]):
+        pername = peopledf.iloc[r,0] 
+        subjval = auxprefix + "per_" + makeid(pername)
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['People'])))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
+        for c in range(peopledf.shape[1]):  
+            colname = peopledf.columns[c]
+            cellval = peopledf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, personpred[colname], subjval, cellval, pername) 
+
+
+
+    # And I just realized the tables below are creating *Roles*. This is a new class. I'd better add it.
+    # It's in BFO - http://purl.obolibrary.org/obo/BFO_0000023
+    g.add((rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023'), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal('Role')))
+
+
+
+
+    # People-orgs
+    for r in range(peopleorgdf.shape[0]):
+        rolestr = peopleorgdf.iloc[r,0] + peopleorgdf.iloc[r,1] + peopleorgdf.iloc[r,2]
+        subjval = auxprefix + "rol_" + makeid(rolestr)
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(peopleorgdf.iloc[r,2])))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))
+        for c in range(peopleorgdf.shape[1]):  
+            colname = peopleorgdf.columns[c]
+            cellval = peopleorgdf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, personorgpred[colname], subjval, cellval, rolestr) 
+
+
+    # People-proj
+    for r in range(peopleprojdf.shape[0]):
+        if peopleprojdf.iloc[r,2] == '':
+            newrole = 'Participant'
+        else:
+            newrole = peopleprojdf.iloc[r,2]
+        rolestr = peopleprojdf.iloc[r,0] + peopleprojdf.iloc[r,1] + newrole  
+        #pername = peopleprojdf.iloc[r,0] 
+        subjval = auxprefix + "rol_" + makeid(rolestr)
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(newrole)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))    
+        for c in range(peopleprojdf.shape[1]):  
+            colname = peopleprojdf.columns[c]
+            cellval = peopleprojdf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, personprojpred[colname], subjval, cellval, rolestr) 
+
+
+
+
+    # People-program
+    for r in range(peopleprogramdf.shape[0]):
+        rolestr = peopleorgdf.iloc[r,0] + peopleorgdf.iloc[r,1] + peopleorgdf.iloc[r,2]
+        #pername = peopleprogramdf.iloc[r,0] 
+        subjval = auxprefix + "rol_" + makeid(rolestr)
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(peopleorgdf.iloc[r,2])))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))    
+        for c in range(peopleprogramdf.shape[1]):
+            colname = peopleprogramdf.columns[c]
+            cellval = peopleprogramdf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, personprogrampred[colname], subjval, cellval, rolestr) 
+
+
+
+    # guidelines/mandates
+    for r in range(guidelinesdf.shape[0]):
+        pername = guidelinesdf.iloc[r,0] 
+        subjval = auxprefix + "gmt_" + makeid(pername)
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Guidelines_Mandates'])))        
+        for c in range(guidelinesdf.shape[1]): 
+            colname = guidelinesdf.columns[c]
+            cellval = guidelinesdf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, guidelinespred[colname], subjval, cellval, pername) 
+
+
+
+    # organizations - guidelines/mandates
+    # different logic here, the table is of triples
+    for r in range(orggmdf.shape[0]):
+        orgname = orggmdf.iloc[r,0] 
+        subjval = auxprefix + "org_" + makeid(orgname)
+        pred = orggmpred[orggmdf.iloc[r,1]][1]
+        objval = auxprefix + "gmt_" + makeid(orggmdf.iloc[r,2]) 
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(pred), rdflib.URIRef(objval)))
+        
+
+    # somewhat different logic for this table as well. columns C, D, E in this table form a class that
+    # whose instances the GMs in column A point to with predicate in column B. The entries in this 
+    # dictionary are for columns C, D, and E  --- from above
+    for r in range(orgprojgmdf.shape[0]):
+        rolestr = orgprojgmdf.iloc[r,2] + orgprojgmdf.iloc[r,3] + orgprojgmdf.iloc[r,4]
+        roleval = auxprefix + "rol_" + makeid(rolestr)
+        g.add((rdflib.URIRef(roleval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(orgprojgmdf.iloc[r,3])))
+        g.add((rdflib.URIRef(roleval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))
+        gmname = orgprojgmdf.iloc[r,0] 
+        subjval = auxprefix + "gmt_" + makeid(gmname)
+        pred = orggmrelationdict[orgprojgmdf.iloc[r,1]]                                                                            
+        objval = roleval
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(pred), rdflib.URIRef(objval)))
+        
+
+
+    # datasets
+    for r in range(datasetdf.shape[0]):
+        pername = datasetdf.iloc[r,0] 
+        subjval = auxprefix + "dat_" + makeid(pername)
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Datasets'])))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
+        for c in range(datasetdf.shape[1]): 
+            colname = datasetdf.columns[c]
+            cellval = datasetdf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, datasetpred[colname], subjval, cellval, pername) 
+
+
+
+    # tools
+    for r in range(tooldf.shape[0]):
+        pername = tooldf.iloc[r,0] 
+        subjval = auxprefix + "tol_" + makeid(pername)
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Tools'])))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
+        for c in range(tooldf.shape[1]):  
+            colname = tooldf.columns[c]
+            cellval = tooldf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, toolpred[colname], subjval, cellval, pername) 
+
+    # return the graph after all that
+    return g
 # Now write the graph out!
-g.serialize(format="turtle", destination="./PPOD0.ttl")
+def writegraph(g):
+    g.serialize(format="turtle", destination="./PPOD0.ttl")
 
 
 # fixed the labels problem (needed a list for the map), but get
 # Exception: "FSL doc" does not look like a valid URI, I cannot serialize this as N3/Turtle. Perhaps you wanted to urlencode it?
 
+def main():
+    g = creategraph()
+    writegraph(g)
+
+if __name__ == "__main__":
+    main()
