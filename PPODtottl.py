@@ -266,6 +266,11 @@ def makeid(s):
 
 
 # Return a dictionary giving the URI for a particular vocabulary term
+# Parameters:
+# vocabdframe - data frame with vocabulary information
+# vocabdfstr - string giving column name of particular vocab
+# auxprefix - base URI of location for terms
+# prefixstr - 3 letter prefix string indicating entity class e.g. 'prj' = project
 def makevocabdict(vocabdframe, vocabdfstr, auxprefix, prefixstr):
     vrole = vocabdframe[vocabdfstr]
     vdict = {}
@@ -277,6 +282,13 @@ def makevocabdict(vocabdframe, vocabdfstr, auxprefix, prefixstr):
 
 
 # add a triple (or multiples maybe) to the graph g based on details in describing predicate
+# 
+# Parameters:
+# g - the RDF graph being assembled
+# prdetails - the 5-element tuple from the predicate dictionary describing the predicate being added
+# subjval - a string giving the subject of the RDF triple
+# cellval - a string indicating the object of the RDF triple (may be comma-delimited)
+# subjectstr - a string describing subject for KeyError reporting
 def addtriple(g, prdetails, subjval, cellval, subjectstr):
     # print(subjval, cellval)
     subj =  rdflib.URIRef(subjval)
@@ -317,6 +329,11 @@ def addtriple(g, prdetails, subjval, cellval, subjectstr):
             obj = rdflib.URIRef(cell)
             g.add((subj, pred, obj))
 
+
+# Add vocabulary dictionary to the RDF graph by giving rdfs:label s to the vocab URI terms
+# Parameters: dicttoadd - the dictionary being added to the graph
+# gr - the RDF graph being added to
+# labeluri - the base URI for RDF schema
 def adddicttograph(dicttoadd, gr, labeluri):
     #print("inadddictograph with ", labeluri)
     for k in dicttoadd.keys():
