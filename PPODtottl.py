@@ -251,8 +251,20 @@ toolpred = {
             "URL": ('u', 'http://dev.poderopedia.com/vocab/hasURL', 'has URL', '', 's')
 }
 
-
-
+# We're added the list of use cases as a dictionary. They are referred to in the spreadsheet
+# as separate columns but we want to use a single predicate to reference these 
+# i.e. "in use case" --> "Meat processing"
+usecases = { "usecaseConservation": ('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#usecaseConservation', 'Conservation use case'),
+            "usecaseMeat": ('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#usecaseMeat', 'Meat use case'),
+            "usecaseSac": ('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#usecaseSac', 'Sacramento case'),
+            "usecaseSCAG": ('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#usecaseSCAG', 'SCAG use case'),
+            "usecaseEcuador": ('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#usecaseEcuador', 'Ecuador use case'),
+            "usecaseBayAreaRAMP": ('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#BayAreaRAMP', 'Bay Area RAMP use case'),
+            "Use Case (Meat)":('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#usecaseMeat', 'Meat use case'),
+            "Use Case (EPA)": ('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#usecaseEPA', 'EPA use case'),
+            "Use Case (JPA)": ('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#usecaseJPA', 'JPA use case'), 
+            "Use Case (SCAG)":  ('https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#usecaseSCAG', 'SCAG use case')
+}
 
 ##### Functions #####
 
