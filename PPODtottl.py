@@ -456,6 +456,7 @@ def creategraph():
     global issuedict
     issuedict = {**compissuedict , **intissuedict} 
 
+    # Create dictionaries out of the vocab dataframes
 
     # #### Counties
     # After some search, have opted to use Wikidata URIs for the California counties. I grabbed these from Wikidata using their SPARQL query interface.
@@ -470,7 +471,6 @@ def creategraph():
 
 
     # For the rest of these vocabulary columns I'm going to use my minihash function.
-
     # Ecoregions
     ecoregions = vocabdf['Ecoregion_USDA']
     global ecoregiondict # likewise on the poor style
@@ -517,7 +517,7 @@ def creategraph():
 
 
     # #### Refining things
-    # Each cell of the sheets can refer to 4 different things I think. These will have different treatments. They can be:
+    # Each cell of the sheets can refer to 4 different things. These will have different treatments. They can be:
     # * Literals. Just add them as strings
     # * References to other objects in this spreadsheet system.
     # * References to outside URLs
@@ -552,7 +552,7 @@ def creategraph():
     # Now for the great adventure. Take each of our sheets, go through the columns row-by-row, and add triples.
 
 
-    # Organizations
+    # Add triples for the organizations
     for r in range(orgdf.shape[0]):
         orgname = orgdf.iloc[r,0] 
         subjval = auxprefix + "org_" + makeid(orgname)
@@ -735,9 +735,6 @@ def creategraph():
 def writegraph(g):
     g.serialize(format="turtle", destination="./PPOD0.ttl")
 
-
-# fixed the labels problem (needed a list for the map), but get
-# Exception: "FSL doc" does not look like a valid URI, I cannot serialize this as N3/Turtle. Perhaps you wanted to urlencode it?
 
 def main():
     g = creategraph()
