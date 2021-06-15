@@ -65,6 +65,7 @@ orgpred = {"Organization": ('d', 'http://purl.org/dc/terms/title', 'title', '', 
            # for county, will change the URI at some point
           "County": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inCounty', 'in county', 'countydict', 'm'),
            "Ecoregion": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inEcoregion', 'in ecoregion', 'ecoregiondict','m'),
+           "GeoFeature": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#assocGeo', 'associated geography', 'geofeaturedict','m'),
           "hasOrgType": ('v', 'http://www.w3.org/ns/org#classification', 'organization type', 'orgtypedict', 'm'),
           "Partners": ('o', 'http://vivoweb.org/ontology/core#hasCollaborator', 'has partner', 'org', 'm'),
             "Funding": ('o', 'http://purl.org/cerif/frapo/isFundedBy', 'is funded by', 'org','m'),
@@ -75,6 +76,7 @@ orgpred = {"Organization": ('d', 'http://purl.org/dc/terms/title', 'title', '', 
            # taxa should be an object property at some point, but for assume content is a string
            "Taxa": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#taxa', 'taxa', '','m'),
            "Land Cover - CWHR": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#habitatType', 'habitat type', 'habtypedict', 'm'), # need to build this
+            "Commodity": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#commodity', 'commodity', 'commoditydict','m'),
            "Ecological Process": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#ecologicalProcess', 'ecological process', '','s'),
            "GM_Name": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#GM_Name', 'guideline/mandate name', 'gmt', 'm'),
            "usecaseConservation": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#usecaseCons', 'use case: Conservation', '', 's'),
@@ -511,6 +513,10 @@ def creategraph():
     global orgprojrelationdict
     orgprojrelationdict = makevocabdict(vocabdf, 'orgProjRelation', auxprefix, 'prl') 
     # orgProjRelation - this may be redundant as well, but for completeness....
+    global geofeaturedict
+    geofeaturedict = makevocabdict(vocabdf, 'GeoFeature', auxprefix, 'geo')
+    global commoditydict
+    commoditydict = makevocabdict(vocabdf, 'Commodity', auxprefix, 'cmd')
 
 
 
@@ -538,7 +544,7 @@ def creategraph():
 
 
     # the first step is to get vocabularies loaded, in particular creating rdfs:labels for the entries
-    list(map(lambda d: adddicttograph(d, g, rdfsuri), [ecoregiondict, issuedict, countydict, habtypedict, orgtypedict, orgactivitydict, projtypedict, progtypedict, gmtypedict, govleveldict, positiontypedict, projroledict, orggmrelationdict, orgprojrelationdict]))
+    list(map(lambda d: adddicttograph(d, g, rdfsuri), [ecoregiondict, issuedict, countydict, habtypedict, orgtypedict, orgactivitydict, projtypedict, progtypedict, gmtypedict, govleveldict, positiontypedict, projroledict, orggmrelationdict, orgprojrelationdict, geofeaturedict, commoditydict]))
 
     # now add the labels for the predicates
     for k in predlabeldict.keys():
