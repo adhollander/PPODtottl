@@ -65,7 +65,7 @@ orgpred = {"Organization": ('d', 'http://purl.org/dc/terms/title', 'title', '', 
            # for county, will change the URI at some point
           "County": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inCounty', 'in county', 'countydict', 'm'),
            "Ecoregion": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inEcoregion', 'in ecoregion', 'ecoregiondict','m'),
-           "GeoFeature": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#assocGeo', 'associated geography', 'geofeaturedict','m'),
+           "hasGeography": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#assocGeo', 'associated geography', 'geofeaturedict','m'),
           "hasOrgType": ('v', 'http://www.w3.org/ns/org#classification', 'organization type', 'orgtypedict', 'm'),
           "Partners": ('o', 'http://vivoweb.org/ontology/core#hasCollaborator', 'has partner', 'org', 'm'),
             "Funding": ('o', 'http://purl.org/cerif/frapo/isFundedBy', 'is funded by', 'org','m'),
@@ -104,7 +104,7 @@ projpred = {"Project": ('d', 'http://xmlns.com/foaf/0.1/Project', 'project', '',
             "Ecoregion": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inEcoregion', 'in ecoregion', 'ecoregiondict', 'm'),
             "Watershed": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inWatershed', 'in watershed', '', 's'),
             "Issues": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#FSI_000239', 'related sustainability issue', 'issuedict', 'm'),
-            "ProjDetails": ('u', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#projDetails', 'project details', '', 's'),
+            "has description": ('u', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#projDetails', 'project details', '', 's'),
             "Indicators": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#hasIndicator', 'has indicator', '', 's'),
             "inDataset": ('o', 'http://purl.obolibrary.org/obo/RO_0002352', 'input of', 'dts', 'm'),
             "outDataset": ('o', 'http://purl.obolibrary.org/obo/RO_0002353', 'output of', 'dts', 'm'),
@@ -217,6 +217,7 @@ orggmpred = {
             "Was Created By": ('o', 'http://iflastandards.info/ns/fr/frbr/frbrer/P2007', 'was created by'),
             "Implements": ('o',  'https://w3id.org/dingo#implements', 'implements'), # DINGO is (another) projects and grants ontology 
             "Mandates": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#mandates', 'mandates'),
+            "Is Bound By": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#isboundby', 'is bound by'),
             "Funds Established By": ('o', 'http://vivoweb.org/ontology/core#hasFundingVehicle', 'has funding vehicle'),  
 }
 
@@ -566,6 +567,7 @@ def creategraph():
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(orgname)))
         for c in range(orgdf.shape[1]):
             colname = orgdf.columns[c]
+            # print(colname)
             cellval = orgdf.iloc[r,c]
             if cellval != '':
                 addtriple(g, orgpred[colname], subjval, cellval, orgname) 
