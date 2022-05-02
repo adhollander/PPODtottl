@@ -30,6 +30,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 auxprefix = 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#' # one of these days we'll have a better namespace but at least this is accessible
 rdfsuri = "http://www.w3.org/2000/01/rdf-schema#"
 rdfuri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+fslsprefix = "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#"
 
 
 
@@ -219,6 +220,9 @@ orggmpred = {
             "Mandates": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#mandates', 'mandates'),
             "Is Bound By": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#isboundby', 'is bound by'),
             "Funds Established By": ('o', 'http://vivoweb.org/ontology/core#hasFundingVehicle', 'has funding vehicle'),  
+            "Is Certified By": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#iscertifiedby', 'is certified by'),
+            "Enforces": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#enforces', 'enforces'),
+
 }
 
 # somewhat different logic for this table as well. columns C, D, E in this table form a class that
@@ -321,7 +325,9 @@ def addtriple(g, prdetails, subjval, cellval, subjectstr):
             pred = rdflib.URIRef(prdetails[1])
             if 'usecase' in prdetails[1]:
                 if cell == 'X' or cell == 'x':
-                    obj = rdflib.Literal(True, datatype = rdflib.namespace.XSD.boolean)
+                    # obj = rdflib.Literal(True, datatype = rdflib.namespace.XSD.boolean)
+                    pred = rdflib.URIRef(fslsprefix + "usecase")
+                    obj = rdflib.URIRef(prdetails[1])
             else:
                 if prdetails[3] == 'countydict':
                     cell = cell + " County"
@@ -632,6 +638,14 @@ def creategraph():
         for c in range(peopleorgdf.shape[1]):  
             colname = peopleorgdf.columns[c]
             cellval = peopleorgdf.iloc[r,c]
+            if peopleorgdf.iloc[r,0] == "Rebecca Fris":
+                print(peopleorgdf.iloc[r,0],"*" , peopleorgdf.iloc[r,2], "*",  peopleorgdf.iloc[r,3])
+            if c == 2: # we have cases where there is no role info in the Position (verbatim) column but there is in the Position (type) column
+                if cellval == '':
+                    print("empty string")
+                    cellval = peopleorgdf.iloc[r,3]
+                if cellval == '':
+                    cellval = 'Unstated role'
             if cellval != '':
                 addtriple(g, personorgpred[colname], subjval, cellval, rolestr) 
 
