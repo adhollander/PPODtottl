@@ -254,7 +254,7 @@ toolpred = {
             "Issues":  ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#FSI_000239', 'related sustainability issue', 'issuedict', 'm'),
             "inDataset": ('o', 'http://purl.obolibrary.org/obo/RO_0002233', 'has input', 'dts', 'm'),
             "outDataset": ('o', 'http://purl.obolibrary.org/obo/RO_0000087', 'has output', 'dts', 'm'),
-            "ToolDetails": ('u', 'http://purl.org/dc/terms/references', 'references', '', 's'),
+            "ToolDetails": ('d', 'http://purl.org/dc/terms/references', 'references', '', 's'),
             "URL": ('u', 'http://dev.poderopedia.com/vocab/hasURL', 'has URL', '', 's')
 }
 
