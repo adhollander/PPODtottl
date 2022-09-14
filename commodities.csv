@@ -1,0 +1,43 @@
+commodity,URI
+alfalfa,http://aims.fao.org/aos/agrovoc/c_4693
+almonds,http://aims.fao.org/aos/agrovoc/c_8734
+apricots,http://aims.fao.org/aos/agrovoc/c_545
+beef,http://aims.fao.org/aos/agrovoc/c_861
+cherries,http://aims.fao.org/aos/agrovoc/c_1534
+citrus,http://aims.fao.org/aos/agrovoc/c_1637
+dairy,http://aims.fao.org/aos/agrovoc/c_4827
+figs,http://aims.fao.org/aos/agrovoc/c_10840
+grapes,http://aims.fao.org/aos/agrovoc/c_3359
+honey,http://aims.fao.org/aos/agrovoc/c_3652
+lemons,http://aims.fao.org/aos/agrovoc/c_4259
+oranges,http://aims.fao.org/aos/agrovoc/c_7550
+peaches,http://aims.fao.org/aos/agrovoc/c_5638
+pears,http://aims.fao.org/aos/agrovoc/c_5645
+pistachios,http://aims.fao.org/aos/agrovoc/c_13413
+pomegranates,http://aims.fao.org/aos/agrovoc/c_13505
+prunes,http://aims.fao.org/aos/agrovoc/c_13635
+raisins,http://aims.fao.org/aos/agrovoc/c_16502
+rice,http://aims.fao.org/aos/agrovoc/c_6599
+tomatoes,http://aims.fao.org/aos/agrovoc/c_7805
+cattle,http://aims.fao.org/aos/agrovoc/c_1391
+chickens,http://aims.fao.org/aos/agrovoc/c_1540
+eggs,http://aims.fao.org/aos/agrovoc/c_2502
+sheep,http://aims.fao.org/aos/agrovoc/c_7030
+swine,http://aims.fao.org/aos/agrovoc/c_7555
+walnuts,http://aims.fao.org/aos/agrovoc/c_15254
+pecans,http://aims.fao.org/aos/agrovoc/c_13178
+milk products,http://aims.fao.org/aos/agrovoc/c_4827
+soft fruits,http://aims.fao.org/aos/agrovoc/c_7151
+wine grapes,http://aims.fao.org/aos/agrovoc/c_8403
+wines,http://aims.fao.org/aos/agrovoc/c_8406
+hay,http://aims.fao.org/aos/agrovoc/c_3508
+apples,http://aims.fao.org/aos/agrovoc/c_541
+goats,http://aims.fao.org/aos/agrovoc/c_3324
+ducks,http://aims.fao.org/aos/agrovoc/c_2406
+turkeys,http://aims.fao.org/aos/agrovoc/c_8016
+rabbits,http://aims.fao.org/aos/agrovoc/c_6414
+yaks,http://aims.fao.org/aos/agrovoc/c_8477
+bison,http://aims.fao.org/aos/agrovoc/c_939
+geese,http://aims.fao.org/aos/agrovoc/c_3208
+garlic,http://aims.fao.org/aos/agrovoc/c_11091
+corn,http://aims.fao.org/aos/agrovoc/c_12332

@@ -90,7 +90,7 @@ orgpred = {"Organization": ('d', 'http://purl.org/dc/terms/title', 'title', '', 
         
 
 # Project predicates dictionary
-projpred = {"Project": ('d', 'http://xmlns.com/foaf/0.1/Project', 'project', '','s'),
+projpred = {"Project": ('d', 'http://purl.org/dc/terms/title', 'title', '', 's'),
             "Alias": ('d', 'http://www.w3.org/2004/02/skos/core#altLabel', 'alias', '', 's'),
             "isPartOf": ('o', 'http://purl.org/dc/terms/isPartOf', 'is part of', 'prj','m'),
             "ProjType": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#projType', 'project type', 'projtypedict', 'm'),
@@ -127,7 +127,7 @@ projpred = {"Project": ('d', 'http://xmlns.com/foaf/0.1/Project', 'project', '',
 
 # program predicates dictionary
 progpred = {
-            "Program": ('d', 'http://vivoweb.org/ontology/core#Program', 'program', '', 's'),    
+            "Program": ('d', 'http://purl.org/dc/terms/title', 'title', '', 's'),    
             "Alias":   ('d', 'http://www.w3.org/2004/02/skos/core#altLabel', 'alias', '', 's'),
             "ProgType": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#progType', 'program type', 'progtypedict', 'm'),
             "Organization": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#leadOrg', 'lead organization', 'org', 'm'),
@@ -477,7 +477,14 @@ def creategraph():
         countydict.update( {counties_wd.iloc[i,1] : counties_wd.iloc[i,0] })
 
 
-
+    # Commodities
+    # We are reading in a table of commodities so as to grab the URIs
+    commoditydf = pd.read_csv('commodities.csv')
+    global commoditydict
+    commoditydict = {}
+    for i in range(commoditydf.shape[0]):
+        commoditydict.update({commoditydf.iloc[i,0] : commoditydf.iloc[i,1] })
+ 
 
     # For the rest of these vocabulary columns I'm going to use my minihash function.
     # Ecoregions
@@ -522,8 +529,8 @@ def creategraph():
     # orgProjRelation - this may be redundant as well, but for completeness....
     global geofeaturedict
     geofeaturedict = makevocabdict(vocabdf, 'GeoFeature', auxprefix, 'geo')
-    global commoditydict
-    commoditydict = makevocabdict(vocabdf, 'Commodity', auxprefix, 'cmd')
+    # global commoditydict
+    # commoditydict = makevocabdict(vocabdf, 'Commodity', auxprefix, 'cmd')
 
 
 
@@ -664,6 +671,9 @@ def creategraph():
         for c in range(peopleprojdf.shape[1]):  
             colname = peopleprojdf.columns[c]
             cellval = peopleprojdf.iloc[r,c]
+            if c == 2: # handle the case of no stated role
+                if cellval == '':
+                    cellval = 'Unstated role'
             if cellval != '':
                 addtriple(g, personprojpred[colname], subjval, cellval, rolestr) 
 
