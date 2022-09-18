@@ -31,6 +31,7 @@ auxprefix = 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PP
 rdfsuri = "http://www.w3.org/2000/01/rdf-schema#"
 rdfuri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 fslsprefix = "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#"
+dctermsuri = "http://purl.org/dc/terms/title/"
 
 
 
@@ -667,6 +668,7 @@ def creategraph():
         #pername = peopleprojdf.iloc[r,0] 
         subjval = auxprefix + "rol_" + makeid(rolestr)
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(newrole)))
+        #g.add((rdflib.URIRef(subjval), rdflib.URIRef(dctermsuri + 'title'), rdflib.Literal(newrole)))
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))    
         for c in range(peopleprojdf.shape[1]):  
             colname = peopleprojdf.columns[c]
@@ -686,6 +688,7 @@ def creategraph():
         #pername = peopleprogramdf.iloc[r,0] 
         subjval = auxprefix + "rol_" + makeid(rolestr)
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(peopleorgdf.iloc[r,2])))
+        #g.add((rdflib.URIRef(subjval), rdflib.URIRef(dctermsuri + 'title'), rdflib.Literal(peopleorgdf.iloc[r,2])))
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))    
         for c in range(peopleprogramdf.shape[1]):
             colname = peopleprogramdf.columns[c]
@@ -726,6 +729,7 @@ def creategraph():
         rolestr = orgprojgmdf.iloc[r,2] + orgprojgmdf.iloc[r,3] + orgprojgmdf.iloc[r,4]
         roleval = auxprefix + "rol_" + makeid(rolestr)
         g.add((rdflib.URIRef(roleval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(orgprojgmdf.iloc[r,3])))
+        #g.add((rdflib.URIRef(subjval), rdflib.URIRef(dctermsuri + 'title'), rdflib.Literal(orgprojgmdf.iloc[r,3])))
         g.add((rdflib.URIRef(roleval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))
         gmname = orgprojgmdf.iloc[r,0] 
         subjval = auxprefix + "gmt_" + makeid(gmname)
