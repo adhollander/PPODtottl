@@ -12,6 +12,7 @@ import gspread
 import pandas as pd
 import binascii
 import rdflib
+from rdflib import Namespace
 from pprint import pprint
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -774,6 +775,15 @@ def writegraph(g):
 
 def main():
     g = creategraph()
+    g.bind("obo", Namespace("http://purl.obolibrary.org/obo/"))
+    g.bind("fsls", Namespace("https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#"))
+    g.bind("vivo", Namespace("http://vivoweb.org/ontology/core#"))
+    g.bind("poder", Namespace("http://dev.poderopedia.com/vocab/"))
+    g.bind("frbr", Namespace("http://iflastandards.info/ns/fr/frbr/frbrer/"))
+    g.bind("dbpedia", Namespace("http://dbpedia.org/ontology/"))
+    g.bind("dg", Namespace("https://w3id.org/dingo#"))
+    g.bind("frapo", Namespace("http://purl.org/cerif/frapo/"))
+    g.bind("fslp", Namespace("https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#"))
     writegraph(g)
 
 if __name__ == "__main__":
