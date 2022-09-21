@@ -15,6 +15,7 @@ import rdflib
 from rdflib import Namespace
 from pprint import pprint
 from oauth2client.service_account import ServiceAccountCredentials
+import csv
 
 ##### Data #####
 
@@ -319,7 +320,8 @@ def addtriple(g, prdetails, subjval, cellval, subjectstr):
         elif prdetails[3] == 'ecoregiondict':
             cellval = ','.join(ecoregiondict.keys())
     if prdetails[4] == 'm':
-        celllist = [s.strip() for s in cellval.split(',')]
+    #    celllist = [s.strip() for s in cellval.split(',')]
+        celllist = [s.strip() for s in next(csv.reader([cellval]))] # handle double-quoted strings correctly
     else:
         celllist = [cellval]
     for cell in celllist:
@@ -399,8 +401,8 @@ def creategraph():
     datasets_sheet = gsworkbook.worksheet('Datasets')
     tools_sheet = gsworkbook.worksheet('Tools')
     futureresources_sheet = gsworkbook.worksheet('Future Resources')
-    intissues_sheet = gsworkbook.worksheet('Issues (Integrated)')
-    compissues_sheet = gsworkbook.worksheet('Issues (Component)')
+    intissues_sheet = gsworkbook.worksheet('Issues_Integrated')
+    compissues_sheet = gsworkbook.worksheet('Issues_Component')
 
     # convert these to data frames
     vocabdf = pd.DataFrame(vocab_sheet.get_all_records())
