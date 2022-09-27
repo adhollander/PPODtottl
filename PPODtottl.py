@@ -75,7 +75,7 @@ orgpred = {"Organization": ('d', 'http://purl.org/dc/terms/title', 'title', '', 
             "Funding": ('o', 'http://purl.org/cerif/frapo/isFundedBy', 'is funded by', 'org','m'),
            "hasOrgActivity": ('v', 'http://purl.obolibrary.org/obo/RO_0000056', 'participates in','orgactivitydict', 'm'),
            "Issues": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#FSI_000239', 'related sustainability issue', 'issuedict', 'm'), # need to agglom comp and int issues
-           "URL": ('u', 'http://dev.poderopedia.com/vocab/hasURL', 'has URL', '', 'm'),
+           "URL": ('u', 'http://poderopedia.com/vocab/hasURL', 'has URL', '', 'm'),
            "Contact": ('d', 'http://vivoweb.org/ontology/core#contactInformation', 'contact', '','s'),
            # taxa should be an object property at some point, but for assume content is a string
            "Taxa": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#taxa', 'taxa', '','m'),
@@ -113,7 +113,7 @@ projpred = {"Project": ('d', 'http://purl.org/dc/terms/title', 'title', '', 's')
             "inDataset": ('o', 'http://purl.obolibrary.org/obo/RO_0002352', 'input of', 'dts', 'm'),
             "outDataset": ('o', 'http://purl.obolibrary.org/obo/RO_0002353', 'output of', 'dts', 'm'),
             "Strategies": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#hasStrategy', 'has strategy', '', 'm'),
-            "URL": ('u', 'http://dev.poderopedia.com/vocab/hasURL', 'has URL', '', 'm'),
+            "URL": ('u', 'http://poderopedia.com/vocab/hasURL', 'has URL', '', 'm'),
             "Taxa": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#taxa', 'taxa', '', 'm'),
             "Land Cover - CWHR": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#habitatType', 'habitat type', 'habtypedict', 'm'),
             "Ecological Process": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#ecologicalProcess', 'ecological process', '', 's'),
@@ -140,7 +140,7 @@ progpred = {
             "GM_Name": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#GM_Name', 'guideline/mandate name', 'gmt', 'm'),
             "County": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inCounty', 'in county', 'countydict', 'm'),
             "Ecoregion": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inEcoregion', 'in ecoregion', 'ecoregiondict', 'm'),
-            "URL": ('u', 'http://dev.poderopedia.com/vocab/hasURL', 'has URL', '', 'm'),
+            "URL": ('u', 'http://poderopedia.com/vocab/hasURL', 'has URL', '', 'm'),
             "Taxa": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#taxa', 'taxa', '', 'm'),
             "Use Case (Meat)": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#usecaseMeat', 'use case: meat', '', 's'),
             "Use Case (EPA)": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#usecaseEPA', 'use case: EPA', '', 's'),
@@ -205,7 +205,7 @@ guidelinespred = {
             "GovLevel": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#govLevel', 'government level', 'govleveldict', 'm'),
             "Counties": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inCounty', 'in county', 'countydict', 'm'),
             "Ecoregions": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inEcoregion', 'in ecoregion', 'ecoregiondict', 'm'),
-            "URL": ('u', 'http://dev.poderopedia.com/vocab/hasURL', 'has URL', '', 's'),
+            "URL": ('u', 'http://poderopedia.com/vocab/hasURL', 'has URL', '', 's'),
             "Taxa": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#taxa', 'taxa', '', 's'),
             "Land Cover - CWHR": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#habitatType', 'habitat type', 'habtypedict', 'm'),
             "Ecological Process": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#ecologicalProcess', 'ecological process', '', 's'),
@@ -242,7 +242,7 @@ datasetpred = {
             "Organization (Created By)": ('o', 'http://iflastandards.info/ns/fr/frbr/frbrer/P2007', 'was created by', 'org', 's'),
             "Issues": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#FSI_000239', 'related sustainability issue', 'issuedict', 'm'),
             "GM_Name":  ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#mandatedBy', 'mandated by', 'gmt', 'm'),
-            "URL":  ('u', 'http://dev.poderopedia.com/vocab/hasURL', 'has URL', '', 's'),
+            "URL":  ('u', 'http://poderopedia.com/vocab/hasURL', 'has URL', '', 's'),
             "Use Case (Meat)": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#usecaseMeat', 'use case: meat', '', 's'),
             "Use Case (JPA)": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#usecaseJPA', 'use case: JPA', '', 's'),
             "Use Case (EPA)": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#usecaseEPA', 'use case: EPA', '', 's')
@@ -258,7 +258,7 @@ toolpred = {
             "inDataset": ('o', 'http://purl.obolibrary.org/obo/RO_0002233', 'has input', 'dts', 'm'),
             "outDataset": ('o', 'http://purl.obolibrary.org/obo/RO_0000087', 'has output', 'dts', 'm'),
             "ToolDetails": ('d', 'http://purl.org/dc/terms/references', 'references', '', 's'),
-            "URL": ('u', 'http://dev.poderopedia.com/vocab/hasURL', 'has URL', '', 's')
+            "URL": ('u', 'http://poderopedia.com/vocab/hasURL', 'has URL', '', 's')
 }
 
 # We're added the list of use cases as a dictionary. They are referred to in the spreadsheet
@@ -525,9 +525,15 @@ def creategraph():
     global projroledict
     projroledict = makevocabdict(vocabdf, 'PeopleProjRole', auxprefix, 'prl')
     global orggmrelationdict
-    orggmrelationdict = makevocabdict(vocabdf, 'orgGMRelation', auxprefix, 'pst') # is prefix correct?
+    # orggmrelationdict = makevocabdict(vocabdf, 'orgGMRelation', auxprefix, 'pst') # is prefix correct?
     # orgGMRelation - might handle this in different manner - these are properties. But I'll create the dict for now.
     # #### Actually, the above is redundant
+    # nope, we actually need properties here. Let's stuff several in:
+    orggmrelationdict = {
+        'Authorizes': 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#authorizes',
+        'Binds': 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#binds',
+        'Mandates': 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#mandates'
+    }
     global orgprojrelationdict
     orgprojrelationdict = makevocabdict(vocabdf, 'orgProjRelation', auxprefix, 'prl') 
     # orgProjRelation - this may be redundant as well, but for completeness....
@@ -779,12 +785,12 @@ def main():
     g = creategraph()
     g.bind("obo", Namespace("http://purl.obolibrary.org/obo/"))
     g.bind("fsls", Namespace("https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#"))
-    g.bind("vivo", Namespace("http://vivoweb.org/ontology/core#"))
-    g.bind("poder", Namespace("http://dev.poderopedia.com/vocab/"))
-    g.bind("frbr", Namespace("http://iflastandards.info/ns/fr/frbr/frbrer/"))
-    g.bind("dbpedia", Namespace("http://dbpedia.org/ontology/"))
+    g.bind("core", Namespace("http://vivoweb.org/ontology/core#"))
+    g.bind("poder", Namespace("http://poderopedia.com/vocab/"))
+    g.bind("frbrer", Namespace("http://iflastandards.info/ns/fr/frbr/frbrer/"))
+    g.bind("dbpo", Namespace("http://dbpedia.org/ontology/"))
     g.bind("dg", Namespace("https://w3id.org/dingo#"))
-    g.bind("frapo", Namespace("http://purl.org/cerif/frapo/"))
+    g.bind("FRAPO", Namespace("http://purl.org/cerif/frapo/"))
     g.bind("fslp", Namespace("https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#"))
     writegraph(g)
 
