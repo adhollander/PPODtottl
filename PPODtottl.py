@@ -34,6 +34,7 @@ rdfsuri = "http://www.w3.org/2000/01/rdf-schema#"
 rdfuri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 fslsprefix = "https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#"
 dctermsuri = "http://purl.org/dc/terms/title/"
+schemauri = "http://schema.org/"
 
 
 
@@ -570,6 +571,10 @@ def creategraph():
     # the first step is to get vocabularies loaded, in particular creating rdfs:labels for the entries
     list(map(lambda d: adddicttograph(d, g, rdfsuri), [ecoregiondict, issuedict, countydict, habtypedict, orgtypedict, orgactivitydict, projtypedict, progtypedict, gmtypedict, govleveldict, positiontypedict, projroledict, orggmrelationdict, orgprojrelationdict, geofeaturedict, commoditydict]))
 
+    # create a root node for LinkML conversions etc.
+    g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(fslsprefix + 'Container')))
+    g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(fslsprefix + 'root')))
+   
     # now add the labels for the predicates
     for k in predlabeldict.keys():
         subj = rdflib.URIRef(k)
@@ -586,8 +591,10 @@ def creategraph():
     for r in range(orgdf.shape[0]):
         orgname = orgdf.iloc[r,0] 
         subjval = auxprefix + "org_" + makeid(orgname)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'organizations'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Organizations'])))
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(orgname)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
         for c in range(orgdf.shape[1]):
             colname = orgdf.columns[c]
             # print(colname)
@@ -601,8 +608,11 @@ def creategraph():
     for r in range(progdf.shape[0]):
         progname = progdf.iloc[r,0] 
         subjval = auxprefix + "prg_" + makeid(progname)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'programs'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Programs'])))
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(progname)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
+
         for c in range(progdf.shape[1]):  
             colname = progdf.columns[c]
             cellval = progdf.iloc[r,c]
@@ -616,8 +626,11 @@ def creategraph():
     for r in range(projdf.shape[0]):
         projname = projdf.iloc[r,0] 
         subjval = auxprefix + "prj_" + makeid(projname)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'projects'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Projects'])))
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(projname)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
+
         for c in range(projdf.shape[1]): 
             colname = projdf.columns[c]
             cellval = projdf.iloc[r,c]
@@ -629,8 +642,11 @@ def creategraph():
     for r in range(peopledf.shape[0]):
         pername = peopledf.iloc[r,0] 
         subjval = auxprefix + "per_" + makeid(pername)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'persons'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['People'])))
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
+
         for c in range(peopledf.shape[1]):  
             colname = peopledf.columns[c]
             cellval = peopledf.iloc[r,c]
@@ -650,8 +666,11 @@ def creategraph():
     for r in range(peopleorgdf.shape[0]):
         rolestr = peopleorgdf.iloc[r,0] + peopleorgdf.iloc[r,1] + peopleorgdf.iloc[r,2]
         subjval = auxprefix + "rol_" + makeid(rolestr)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'roles'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(peopleorgdf.iloc[r,2])))
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
+
         for c in range(peopleorgdf.shape[1]):  
             colname = peopleorgdf.columns[c]
             cellval = peopleorgdf.iloc[r,c]
@@ -676,7 +695,10 @@ def creategraph():
         rolestr = peopleprojdf.iloc[r,0] + peopleprojdf.iloc[r,1] + newrole  
         #pername = peopleprojdf.iloc[r,0] 
         subjval = auxprefix + "rol_" + makeid(rolestr)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'roles'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(newrole)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
+
         #g.add((rdflib.URIRef(subjval), rdflib.URIRef(dctermsuri + 'title'), rdflib.Literal(newrole)))
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))    
         for c in range(peopleprojdf.shape[1]):  
@@ -693,12 +715,16 @@ def creategraph():
 
     # People-program
     for r in range(peopleprogramdf.shape[0]):
+        break
         rolestr = peopleorgdf.iloc[r,0] + peopleorgdf.iloc[r,1] + peopleorgdf.iloc[r,2]
         #pername = peopleprogramdf.iloc[r,0] 
         subjval = auxprefix + "rol_" + makeid(rolestr)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'roles'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(peopleorgdf.iloc[r,2])))
         #g.add((rdflib.URIRef(subjval), rdflib.URIRef(dctermsuri + 'title'), rdflib.Literal(peopleorgdf.iloc[r,2])))
-        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))    
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023'))) 
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
+   
         for c in range(peopleprogramdf.shape[1]):
             colname = peopleprogramdf.columns[c]
             cellval = peopleprogramdf.iloc[r,c]
@@ -711,8 +737,11 @@ def creategraph():
     for r in range(guidelinesdf.shape[0]):
         pername = guidelinesdf.iloc[r,0] 
         subjval = auxprefix + "gmt_" + makeid(pername)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'guidelinemandates'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
-        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Guidelines_Mandates'])))        
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Guidelines_Mandates'])))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
+        
         for c in range(guidelinesdf.shape[1]): 
             colname = guidelinesdf.columns[c]
             cellval = guidelinesdf.iloc[r,c]
@@ -724,27 +753,37 @@ def creategraph():
     # organizations - guidelines/mandates
     # different logic here, the table is of triples
     for r in range(orggmdf.shape[0]):
+        break
         orgname = orggmdf.iloc[r,0] 
         subjval = auxprefix + "org_" + makeid(orgname)
         pred = orggmpred[orggmdf.iloc[r,1]][1]
         objval = auxprefix + "gmt_" + makeid(orggmdf.iloc[r,2]) 
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(pred), rdflib.URIRef(objval)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
+
         
 
     # somewhat different logic for this table as well. columns C, D, E in this table form a class that
     # whose instances the GMs in column A point to with predicate in column B. The entries in this 
     # dictionary are for columns C, D, and E  --- from above
     for r in range(orgprojgmdf.shape[0]):
+        break
         rolestr = orgprojgmdf.iloc[r,2] + orgprojgmdf.iloc[r,3] + orgprojgmdf.iloc[r,4]
         roleval = auxprefix + "rol_" + makeid(rolestr)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'roles'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(roleval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(orgprojgmdf.iloc[r,3])))
+        g.add((rdflib.URIRef(roleval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(roleval)))
+
         #g.add((rdflib.URIRef(subjval), rdflib.URIRef(dctermsuri + 'title'), rdflib.Literal(orgprojgmdf.iloc[r,3])))
         g.add((rdflib.URIRef(roleval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef('http://purl.obolibrary.org/obo/BFO_0000023')))
         gmname = orgprojgmdf.iloc[r,0] 
         subjval = auxprefix + "gmt_" + makeid(gmname)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'guidelinemandates'), rdflib.URIRef(subjval))) #root node list
         pred = orggmrelationdict[orgprojgmdf.iloc[r,1]]                                                                            
         objval = roleval
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(pred), rdflib.URIRef(objval)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
+
         
 
 
@@ -752,8 +791,10 @@ def creategraph():
     for r in range(datasetdf.shape[0]):
         pername = datasetdf.iloc[r,0] 
         subjval = auxprefix + "dat_" + makeid(pername)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'datasets'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Datasets'])))
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
         for c in range(datasetdf.shape[1]): 
             colname = datasetdf.columns[c]
             cellval = datasetdf.iloc[r,c]
@@ -766,8 +807,10 @@ def creategraph():
     for r in range(tooldf.shape[0]):
         pername = tooldf.iloc[r,0] 
         subjval = auxprefix + "tol_" + makeid(pername)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'tools'), rdflib.URIRef(subjval))) #root node list
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Tools'])))
         g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(pername)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
         for c in range(tooldf.shape[1]):  
             colname = tooldf.columns[c]
             cellval = tooldf.iloc[r,c]
@@ -791,6 +834,11 @@ def main():
     g.bind("dbpo", Namespace("http://dbpedia.org/ontology/"))
     g.bind("dg", Namespace("https://w3id.org/dingo#"))
     g.bind("FRAPO", Namespace("http://purl.org/cerif/frapo/"))
+    g.bind("dcterms", Namespace("http://purl.org/dc/terms/"))
+    g.bind("schema", Namespace("http://schema.org/"))
+    g.bind("foaf", Namespace("http://xmlns.com/foaf/0.1/"))
+    g.bind("org", Namespace("http://www.w3.org/ns/org#"))
+    g.bind("skos", Namespace("http://www.w3.org/2004/02/skos/core#"))
     g.bind("fslp", Namespace("https://raw.githubusercontent.com/adhollander/FSLschemas/main/CA_PPODterms.ttl#"))
     writegraph(g)
 
