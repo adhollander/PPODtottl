@@ -49,7 +49,8 @@ PPODrefs = {'Organizations': 'http://xmlns.com/foaf/0.1/Organization',
             'Datasets': 'http://vivoweb.org/ontology/core#Dataset',
             'Tools': 'http://www.sdsconsortium.org/schemas/sds-okn.owl#Tool',
             'Issues (Integrated)': 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/sustsource.owl#IntegratedIssue',
-            'Issues (Component)': 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/sustsource.owl#ComponentIssue'
+            'Issues (Component)': 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/sustsource.owl#ComponentIssue',
+            'Infrastructure': 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/sustsource.owl#Infrastructure'
            }
 
 
@@ -262,6 +263,38 @@ toolpred = {
             "URL": ('u', 'http://poderopedia.com/vocab/hasURL', 'has URL', '', 's')
 }
 
+infrapred = {
+             "Name": ('d', 'http://purl.org/dc/terms/title', 'title', '', 's'),
+             "Alias": ('d', 'http://www.w3.org/2004/02/skos/core#altLabel', 'alias', '', 's'),
+             "InfrastructureType": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureType', 'infrastructure type', 'infradict', 'm'),
+             "isPartOf": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#isPartOfInfra', 'is part of', 'inf', 'm'),
+             "OrgOwner": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#orgOwner', 'organization owner', 'org', 'm'),
+             "OrgManager": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#orgManager', 'organization manager', 'org', 'm'),
+             "OrgUser": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#orgUser', 'organization user', 'org', 'm'),
+             "IssuesPurpose": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#issuesPurpose', 'purpose of infrastructure', 'issuedict', 'm'),
+             "IssuesOther": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#issuesOther', 'related issue', 'issuedict', 'm'),
+             "Project": ('o', 'http://purl.obolibrary.org/obo/RO_0002331', 'involved in', 'prj', 'm'),
+             "Program": ('o', 'http://purl.obolibrary.org/obo/RO_0002331', 'involved in', 'prg', 'm'),
+             "Capacity": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#hasCapacity', 'capacity', '', 's'),
+             "County": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inCounty', 'in county', 'countydict', 'm'),
+             "Ecoregion": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#inEcoregion', 'in ecoregion', 'ecoregiondict', 'm'),
+             "has geography": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#assocGeo', 'associated geography', '', 's'),
+             "InfrastructureUpstream": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureUpstream', 'upstream infrastructure', 'inf', 'm'),
+             "InfrastructureDownstream": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureDownstream', 'downstream infrastructure', 'inf', 'm'),
+             "InfrastructureAdjacent": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureAdjacent', 'adjacent infrastructure', 'inf', 'm'),
+             "InfrastructureIntersect": ('o', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#infrastructureIntersect', 'intersecting infrastructure', 'inf', 'm'),
+             "URL":  ('u', 'http://poderopedia.com/vocab/hasURL', 'has URL', '', 's'),
+             "Taxa": ('d', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#taxa', 'taxa', '', 'm'),
+             "Land Cover - CWHR": ('v', 'https://raw.githubusercontent.com/adhollander/FSLschemas/main/fsisupp.owl#habitatType', 'habitat type', 'habtypedict', 'm')
+
+             
+
+             
+
+
+
+}
+
 # We're added the list of use cases as a dictionary. They are referred to in the spreadsheet
 # as separate columns but we want to use a single predicate to reference these 
 # i.e. "in use case" --> "Meat processing"
@@ -404,6 +437,7 @@ def creategraph():
     futureresources_sheet = gsworkbook.worksheet('Future Resources')
     intissues_sheet = gsworkbook.worksheet('Issues_Integrated')
     compissues_sheet = gsworkbook.worksheet('Issues_Component')
+    infrastructure_sheet = gsworkbook.worksheet('Infrastructure')
 
     # convert these to data frames
     vocabdf = pd.DataFrame(vocab_sheet.get_all_records())
@@ -421,13 +455,14 @@ def creategraph():
     tooldf = pd.DataFrame(tools_sheet.get_all_records())
     intissuedf = pd.DataFrame(intissues_sheet.get_all_records())
     compissuedf = pd.DataFrame(compissues_sheet.get_all_records())
+    infradf = pd.DataFrame(infrastructure_sheet.get_all_records())
 
 
 
     # Create dictionary of predicate URIs as keys and their labels as values
     predlabeldict = {}
     predsbyclasslist = [orgpred, projpred, progpred, personpred, personorgpred, personprojpred, personprogrampred, guidelinespred,
-            orggmpred, orgprojgmpred, datasetpred, toolpred]
+            orggmpred, orgprojgmpred, datasetpred, toolpred, infrapred]
     for predsbyclass in predsbyclasslist:
         for pred0 in predsbyclass.keys():
             pred0val = predsbyclass[pred0]
@@ -542,6 +577,8 @@ def creategraph():
     geofeaturedict = makevocabdict(vocabdf, 'GeoFeature', auxprefix, 'geo')
     # global commoditydict
     # commoditydict = makevocabdict(vocabdf, 'Commodity', auxprefix, 'cmd')
+    global infradict
+    infradict = makevocabdict(vocabdf, 'CISA_InfrastructureType', auxprefix, 'ift')
 
 
 
@@ -569,7 +606,7 @@ def creategraph():
 
 
     # the first step is to get vocabularies loaded, in particular creating rdfs:labels for the entries
-    list(map(lambda d: adddicttograph(d, g, rdfsuri), [ecoregiondict, issuedict, countydict, habtypedict, orgtypedict, orgactivitydict, projtypedict, progtypedict, gmtypedict, govleveldict, positiontypedict, projroledict, orggmrelationdict, orgprojrelationdict, geofeaturedict, commoditydict]))
+    list(map(lambda d: adddicttograph(d, g, rdfsuri), [ecoregiondict, issuedict, countydict, habtypedict, orgtypedict, orgactivitydict, projtypedict, progtypedict, gmtypedict, govleveldict, positiontypedict, projroledict, orggmrelationdict, orgprojrelationdict, geofeaturedict, commoditydict, infradict]))
 
     # create a root node for LinkML conversions etc.
     g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(fslsprefix + 'Container')))
@@ -748,7 +785,20 @@ def creategraph():
             if cellval != '':
                 addtriple(g, guidelinespred[colname], subjval, cellval, pername) 
 
+    # Infrastructure
+    for r in range(infradf.shape[0]):
+        infraname = infradf.iloc[r,0] 
+        subjval = auxprefix + "inf_" + makeid(infraname)
+        g.add((rdflib.URIRef(fslsprefix + 'root'), rdflib.URIRef(fslsprefix + 'infrastructure'), rdflib.URIRef(subjval))) #root node list
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfuri + 'type'), rdflib.URIRef(PPODrefs['Infrastructure'])))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(rdfsuri + 'label'), rdflib.Literal(infraname)))
+        g.add((rdflib.URIRef(subjval), rdflib.URIRef(schemauri + 'identifier'), rdflib.URIRef(subjval)))
 
+        for c in range(infradf.shape[1]):  
+            colname = infradf.columns[c]
+            cellval = infradf.iloc[r,c]
+            if cellval != '':
+                addtriple(g, infrapred[colname], subjval, cellval, infraname) 
 
     # organizations - guidelines/mandates
     # different logic here, the table is of triples
@@ -821,7 +871,7 @@ def creategraph():
     return g
 # Now write the graph out!
 def writegraph(g):
-    g.serialize(format="turtle", destination="./PPOD0.ttl")
+    g.serialize(format="turtle", destination="./PPOD0infra.ttl")
 
 
 def main():
