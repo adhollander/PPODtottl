@@ -871,7 +871,7 @@ def creategraph():
     return g
 # Now write the graph out!
 def writegraph(g):
-    g.serialize(format="turtle", destination="./PPOD0infra.ttl")
+    g.serialize(format="turtle", destination="./PPOD0.ttl")
 
 
 def main():
